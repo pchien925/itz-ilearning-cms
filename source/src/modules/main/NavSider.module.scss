@@ -1,0 +1,54 @@
+@import '@assets/scss/global';
+
+.sidebar {
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: none; // Firefox
+    -ms-overflow-style: none; // IE/Edge legacy
+
+    &::-webkit-scrollbar {
+        display: none; // Chrome/Safari/Edge (Chromium)
+    }
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .logoIcon {
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+    }
+
+    &[data-collapsed='true'] {
+        // margin-top: 5px;
+        // height: 26px;
+        // padding: 4px;
+        img {
+            border-radius: 4px;
+            width: 100%;
+        }
+    }
+
+    &[data-collapsed='false'] {
+        // margin-top: 28px;
+        // margin-bottom: 24px;
+        // padding: 6px;
+        // height: 130px;
+        img {
+            border-radius: 10px;
+            width: 100%;
+        }
+    }
+}
+
+.menu {
+    [role='menuitem'] {
+        outline: none !important;
+    }
+}
