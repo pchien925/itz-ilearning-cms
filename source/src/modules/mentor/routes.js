@@ -28,12 +28,12 @@ export default {
         auth: true,
         permission: [apiConfig.mentor.create.permissionCode, apiConfig.mentor.update.permissionCode],
         pageOptions: {
-            objectName: commonMessage.user,
+            objectName: commonMessage.mentor,
             kind: KIND_CUSTOMER,
             listPageUrl: paths.mentorsListPage,
             renderBreadcrumbs: (messages, t, title, options = {}) => {
                 return [
-                    { breadcrumbName: t.formatMessage(messages.user), path: paths.mentorsListPage },
+                    { breadcrumbName: t.formatMessage(messages.mentor), path: paths.mentorsListPage },
                     { breadcrumbName: title },
                 ];
             },
