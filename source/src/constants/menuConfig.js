@@ -11,6 +11,7 @@ export const navMenuConfig = [
         icon: <UsergroupAddOutlined />,
         permission: [
             apiConfig.account.getList.permissionCode,
+            apiConfig.mentor.getList.permissionCode,
         ],
         children: [
             {
@@ -19,6 +20,13 @@ export const navMenuConfig = [
                 path: routes.adminListPage.path,
                 permission: [apiConfig.account.getList.permissionCode],
                 isSuperAdmin: true,
+            },
+            {
+                label: <FormattedMessage defaultMessage="Mentor" />,
+                key: 'mentor',
+                path: routes.mentorListPage.path,
+                permission: [apiConfig.mentor.getList.permissionCode],
+                // isSuperAdmin: true,
             },
         ],
     },

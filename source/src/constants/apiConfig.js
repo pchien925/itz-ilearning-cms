@@ -182,6 +182,53 @@ const apiConfig = {
             permissionCode: 'SET_V',
         },
     },
+    mentor: {
+        getMentorList: {
+            baseURL: `${apiUrl}v1/mentor/list`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'MEN_L',
+        },getList: {
+            baseURL: `${apiUrl}v1/mentor/list`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'MEN_L',
+        },
+        getById: {
+            baseURL: `${apiUrl}v1/mentor/get/:id`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'MEN_V',
+        },
+        create: {
+            baseURL: `${apiUrl}v1/mentor/create`,
+            method: 'POST',
+            headers: baseHeader,
+            permissionCode: 'MEN_C',
+        },
+        update: {
+            baseURL: `${apiUrl}v1/mentor/update`,
+            method: 'PUT',
+            headers: baseHeader,
+            permissionCode: 'MEN_U',
+        },
+        delete: {
+            baseURL: `${apiUrl}v1/mentor/delete/:id`,
+            method: 'DELETE',
+            headers: baseHeader,
+            permissionCode: 'MEN_D',
+        },
+        autocomplete: {
+            baseURL: `${apiUrl}v1/mentor/auto-complete`,
+            method: 'GET',
+            headers: baseHeader,
+        },
+        getProfile: {
+            baseURL: `${apiUrl}v1/mentor/profile`,
+            method: 'GET',
+            headers: baseHeader,
+        },
+    },
 };
 
 export default apiConfig;
