@@ -276,6 +276,37 @@ const apiConfig = {
             permissionCode: 'CLR_D',
         },
     },
+    classroomStudent: {
+        changeState: {
+            baseURL: `${apiUrl}v1/classroom-student/change-state`,
+            method: 'PUT',
+            headers: baseHeader,
+            permissionCode: 'CLS_U',
+        },
+        registerFromRegistration: {
+            baseURL: `${apiUrl}v1/classroom-student/register-from-registration`,
+            method: 'POST',
+            headers: baseHeader,
+        },
+        registerByStudent: {
+            baseURL: `${apiUrl}v1/classroom-student/register-by-student`,
+            method: 'POST',
+            headers: baseHeader,
+            permissionCode: 'CLS_C',
+        },
+        getList: {
+            baseURL: `${apiUrl}v1/classroom-student/list`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'CLS_L',
+        },
+        delete: {
+            baseURL: `${apiUrl}v1/classroom-student/delete/:id`,
+            method: 'DELETE',
+            headers: baseHeader,
+            permissionCode: 'CLS_D',
+        },
+    },
     course: {
         update: {
             baseURL: `${apiUrl}v1/course/update`,

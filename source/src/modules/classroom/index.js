@@ -30,7 +30,6 @@ const ClassroomListPage = ({ pageOptions }) => {
         label: c.name,
     }));
 
-    console.log('courseOptions', courseOptions);
 
     const { data, mixinFuncs, queryFilter, loading, pagination } = useListBase({
         apiConfig: {
@@ -127,7 +126,10 @@ const ClassroomListPage = ({ pageOptions }) => {
                         style={{ color: '#1890ff', cursor: 'pointer', fontWeight: 500 }}
                         onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/course/${record.course.id}`);
+                            const id = record.id;
+                            // Mã hóa tên để đưa lên query param (đổi khoảng trắng thành %20, v.v.)
+                            const encodedName = encodeURIComponent(name);
+                            navigate(`/classroom/${id}/student?classroomName=${encodedName}`);
                         }}
                     >
                         <TextClamp lineClamp={2}>{name}</TextClamp>
@@ -154,7 +156,7 @@ const ClassroomListPage = ({ pageOptions }) => {
             align: 'right',
         },
         {
-            title: translate.formatMessage(commonMessage.status),
+            title: translate.formatMessage(commonMessage.state),
             dataIndex: 'state',
             width: 160,
             align: 'center',
@@ -191,7 +193,7 @@ const ClassroomListPage = ({ pageOptions }) => {
         },
         {
             key: 'state',
-            placeholder: translate.formatMessage(commonMessage.status),
+            placeholder: translate.formatMessage(commonMessage.state),
             type: FieldTypes.SELECT,
             options: stateValue,
             submitOnChanged: true,
