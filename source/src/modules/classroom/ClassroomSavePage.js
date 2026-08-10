@@ -8,7 +8,10 @@ import { showErrorMessage } from '@services/notifyService';
 import React from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import ClassroomForm from './ClassroomForm';
+import { DEFAULT_FORMAT } from '@constants';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
 
 const ClassroomSavePage = ({ pageOptions }) => {
     const translate = useTranslate();
@@ -30,8 +33,8 @@ const ClassroomSavePage = ({ pageOptions }) => {
                 return {
                     ...data,
                     courseId: data.course?.id ?? data.courseId,
-                    startDate: data.startDate ? dayjs(data.startDate).format('DD/MM/YYYY HH:mm:ss') : null,
-                    endDate: data.endDate ? dayjs(data.endDate).format('DD/MM/YYYY HH:mm:ss') : null,
+                    startDate: data.startDate ? dayjs(data.startDate).utc().format(DEFAULT_FORMAT) : null,
+                    endDate: data.endDate ? dayjs(data.endDate).utc().format(DEFAULT_FORMAT) : null,
                     id: id,
                 };
             };
@@ -39,8 +42,8 @@ const ClassroomSavePage = ({ pageOptions }) => {
                 return {
                     ...data,
                     courseId: data.course?.id ?? data.courseId,
-                    startDate: data.startDate ? dayjs(data.startDate).format('DD/MM/YYYY HH:mm:ss') : null,
-                    endDate: data.endDate ? dayjs(data.endDate).format('DD/MM/YYYY HH:mm:ss') : null,
+                    startDate: data.startDate ? dayjs(data.startDate).utc().format(DEFAULT_FORMAT) : null,
+                    endDate: data.endDate ? dayjs(data.endDate).utc().format(DEFAULT_FORMAT) : null,
                 };
             };
             funcs.mappingData = (data) => {

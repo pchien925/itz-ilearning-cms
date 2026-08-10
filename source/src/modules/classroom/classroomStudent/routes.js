@@ -1,11 +1,10 @@
 import apiConfig from '@constants/apiConfig';
 import { commonMessage } from '@locales/intl';
 import ClassroomStudentListPage from '.';
-// import ClassroomSavePage from './ClassroomSavePage';
 
 const paths = {
+    classroomsListPage: '/classrooms',
     classroomStudentsListPage: '/classroom/:id/student',
-    // classroomsSavePage: '/classrooms/:id',
 };
 
 export default {
@@ -18,7 +17,7 @@ export default {
             objectName: commonMessage.student,
             renderBreadcrumbs: (messages, t, title, options = {}) => {
                 return [
-                    { breadcrumbName: t.formatMessage(messages.classroom), path: '/classroom' },
+                    { breadcrumbName: t.formatMessage(messages.classroom), path: paths.classroomsListPage },
                     { breadcrumbName: title },
                 ];
             },

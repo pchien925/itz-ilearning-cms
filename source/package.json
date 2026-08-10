@@ -46,6 +46,7 @@
         "flexsearch": "^0.7.43",
         "husky": "^8.0.2",
         "immer": "^9.0.16",
+        "json-bigint": "^1.0.0",
         "jwt-decode": "^4.0.0",
         "lint-staged": "^13.1.0",
         "lodash": "^4.17.21",
