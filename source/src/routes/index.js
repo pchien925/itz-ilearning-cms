@@ -3,6 +3,9 @@ import groupPermissionRoutes from '@modules/groupPermission/routes';
 import LoginPage from '@modules/login/index';
 import ProfilePage from '@modules/profile/index';
 import adminsRoutes from '@modules/user/routes';
+import mentorsRoutes from '@modules/mentor/routes';
+import classroomRoutes from '@modules/classroom/routes';
+import classroomStudentRoutes from '@modules/classroom/classroomStudent/routes';
 /*
 	auth
 		+ null: access login and not login
@@ -36,6 +39,9 @@ const routes = {
     },
     ...adminsRoutes,
     ...groupPermissionRoutes,
+    ...mentorsRoutes,
+    ...classroomRoutes,
+    ...classroomStudentRoutes,
     // keep this at last
     notFound: {
         component: PageNotFound,

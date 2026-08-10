@@ -182,6 +182,168 @@ const apiConfig = {
             permissionCode: 'SET_V',
         },
     },
+    mentor: {
+        getMentorList: {
+            baseURL: `${apiUrl}v1/mentor/list`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'MEN_L',
+        },getList: {
+            baseURL: `${apiUrl}v1/mentor/list`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'MEN_L',
+        },
+        getById: {
+            baseURL: `${apiUrl}v1/mentor/get/:id`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'MEN_V',
+        },
+        create: {
+            baseURL: `${apiUrl}v1/mentor/create`,
+            method: 'POST',
+            headers: baseHeader,
+            permissionCode: 'MEN_C',
+        },
+        update: {
+            baseURL: `${apiUrl}v1/mentor/update`,
+            method: 'PUT',
+            headers: baseHeader,
+            permissionCode: 'MEN_U',
+        },
+        delete: {
+            baseURL: `${apiUrl}v1/mentor/delete/:id`,
+            method: 'DELETE',
+            headers: baseHeader,
+            permissionCode: 'MEN_D',
+        },
+        autocomplete: {
+            baseURL: `${apiUrl}v1/mentor/auto-complete`,
+            method: 'GET',
+            headers: baseHeader,
+        },
+        getProfile: {
+            baseURL: `${apiUrl}v1/mentor/profile`,
+            method: 'GET',
+            headers: baseHeader,
+        },
+    },
+    classroom: {
+        update: {
+            baseURL: `${apiUrl}v1/class-room/update`,
+            method: 'PUT',
+            headers: baseHeader,
+            permissionCode: 'CLR_U',
+        },
+        changeState: {
+            baseURL: `${apiUrl}v1/class-room/change-state`,
+            method: 'PUT',
+            headers: baseHeader,
+        },
+        create: {
+            baseURL: `${apiUrl}v1/class-room/create`,
+            method: 'POST',
+            headers: baseHeader,
+            permissionCode: 'CLR_C',
+        },
+        getPublicList: {
+            baseURL: `${apiUrl}v1/class-room/public/list`,
+            method: 'GET',
+            headers: baseHeader,
+        },
+        getList: {
+            baseURL: `${apiUrl}v1/class-room/list`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'CLR_L',
+        },
+        getById: {
+            baseURL: `${apiUrl}v1/class-room/get/:id`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'CLR_V',
+        },
+        autocomplete: {
+            baseURL: `${apiUrl}v1/class-room/auto-complete`,
+            method: 'GET',
+            headers: baseHeader,
+        },
+        delete: {
+            baseURL: `${apiUrl}v1/class-room/delete/:id`,
+            method: 'DELETE',
+            headers: baseHeader,
+            permissionCode: 'CLR_D',
+        },
+    },
+    classroomStudent: {
+        changeState: {
+            baseURL: `${apiUrl}v1/classroom-student/change-state`,
+            method: 'PUT',
+            headers: baseHeader,
+            permissionCode: 'CLS_U',
+        },
+        registerFromRegistration: {
+            baseURL: `${apiUrl}v1/classroom-student/register-from-registration`,
+            method: 'POST',
+            headers: baseHeader,
+        },
+        registerByStudent: {
+            baseURL: `${apiUrl}v1/classroom-student/register-by-student`,
+            method: 'POST',
+            headers: baseHeader,
+            permissionCode: 'CLS_C',
+        },
+        getList: {
+            baseURL: `${apiUrl}v1/classroom-student/list`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'CLS_L',
+        },
+        delete: {
+            baseURL: `${apiUrl}v1/classroom-student/delete/:id`,
+            method: 'DELETE',
+            headers: baseHeader,
+            permissionCode: 'CLS_D',
+        },
+    },
+    course: {
+        update: {
+            baseURL: `${apiUrl}v1/course/update`,
+            method: 'PUT',
+            headers: baseHeader,
+            permissionCode: 'COU_U',
+        },
+        create: {
+            baseURL: `${apiUrl}v1/course/create`,
+            method: 'POST',
+            headers: baseHeader,
+            permissionCode: 'COU_C',
+        },
+        getList: {
+            baseURL: `${apiUrl}v1/course/list`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'COU_L',
+        },
+        getById: {
+            baseURL: `${apiUrl}v1/course/get/:id`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'COU_V',
+        },
+        autocomplete: {
+            baseURL: `${apiUrl}v1/course/auto-complete`,
+            method: 'GET',
+            headers: baseHeader,
+        },
+        delete: {
+            baseURL: `${apiUrl}v1/course/delete/:id`,
+            method: 'DELETE',
+            headers: baseHeader,
+            permissionCode: 'COU_D',
+        },
+    },
 };
 
 export default apiConfig;
