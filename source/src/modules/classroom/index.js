@@ -61,9 +61,9 @@ const ClassroomListPage = ({ pageOptions }) => {
             funcs.getItemDetailLink = (dataRow) => {
                 return `${pagePath}/${dataRow.id}${search}`;
             };
-            funcs.getList = () => {
-                const params = mixinFuncs.prepareGetListParams(queryFilter);
-                mixinFuncs.handleFetchList({ ...params });
+            const originalChangeFilter = funcs.changeFilter;
+            funcs.changeFilter = (filter) => {
+                originalChangeFilter({ ...filter, page: 1 });
             };
             funcs.additionalActionColumnButtons = () => ({
                 edit: (record) => {
