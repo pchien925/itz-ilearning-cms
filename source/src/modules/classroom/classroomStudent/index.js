@@ -8,7 +8,7 @@ import useListBase from '@hooks/useListBase';
 import useTranslate from '@hooks/useTranslate';
 import { commonMessage } from '@locales/intl';
 import { Button, Empty, Tag, Modal, Tooltip } from 'antd';
-import React, { useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { DATE_FORMAT_DISPLAY } from '@constants';
 import useFetch from '@hooks/useFetch';
@@ -22,23 +22,8 @@ const ClassroomStudentistPage = ({ pageOptions }) => {
     const search = location.search;
     const { id } = useParams();
     const [searchParams, setSearchParams] = useSearchParams();
-    const initialClassroomName = useRef(searchParams.get('classroomName'));
-    useEffect(() => {
-        if (initialClassroomName.current && !searchParams.has('classroomName')) {
-            searchParams.set('classroomName', initialClassroomName.current);
-            setSearchParams(searchParams, { replace: true });
-        }
-    }, [searchParams, setSearchParams]);
+    const [displayName] = useState(searchParams.get('classroomName'));
     const stateValue = translate.formatKeys(classroomStudentStateOptions, ['label']);
-    const { data: classroomDetail } = useFetch(apiConfig.classroom.getById, {
-        immediate: true,
-        pathParams: { id },
-    });
-    const displayClassroomName =
-        searchParams.get('classroomName') ||
-        classroomDetail?.data?.course?.name ||
-        classroomDetail?.data?.name ||
-        '';
     const { execute: executeChangeState } = useFetch(apiConfig.classroomStudent.changeState);
     const approveState = classroomStudentStateOptions[1].value;
     const rejectState = classroomStudentStateOptions[2].value;
@@ -245,7 +230,7 @@ const ClassroomStudentistPage = ({ pageOptions }) => {
     ];
 
     return (
-        <PageWrapper routes={pageOptions.renderBreadcrumbs(commonMessage, translate, displayClassroomName)}>
+        <PageWrapper routes={pageOptions.renderBreadcrumbs(commonMessage, translate, displayName)}>
             <ListPage
                 searchForm={mixinFuncs.renderSearchForm({ fields: searchFields, initialValues: queryFilter })}
                 actionBar={mixinFuncs.renderActionBar()}
