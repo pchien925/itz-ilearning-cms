@@ -1,10 +1,9 @@
 import apiConfig from '@constants/apiConfig';
-import { classroomState,DEFAULT_FORMAT } from '@constants';
-import { classroomStateOptions } from '@constants/masterData';
+import { classroomState, DEFAULT_FORMAT } from '@constants';
 import useBasicForm from '@hooks/useBasicForm';
 import useFetch from '@hooks/useFetch';
 import useTranslate from '@hooks/useTranslate';
-import { AutoCompleteField, BaseForm, DatePickerField, MoneyField, SelectField } from '@itz/react-cms-element';
+import { AutoCompleteField, BaseForm, DatePickerField, MoneyField } from '@itz/react-cms-element';
 import { commonMessage } from '@locales/intl';
 import { Card, Col, Row } from 'antd';
 import React, { useEffect } from 'react';
@@ -14,7 +13,6 @@ import dayjs from 'dayjs';
 const ClassroomForm = (props) => {
     const translate = useTranslate();
     const { formId, actions, dataDetail, onSubmit, setIsChangedFormValues, isEditing } = props;
-    const stateValue = translate.formatKeys(classroomStateOptions, ['label']);
 
     const { form, mixinFuncs, onValuesChange } = useBasicForm({
         onSubmit,

@@ -1,5 +1,5 @@
-import { DeleteOutlined, EditOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
-import { BaseTable, PageWrapper, ListPage, BaseTooltip, TextClamp } from '@itz/react-cms-element';
+import { DeleteOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { BaseTable, PageWrapper, ListPage, BaseTooltip } from '@itz/react-cms-element';
 import { DEFAULT_TABLE_ITEM_SIZE } from '@constants';
 import apiConfig from '@constants/apiConfig';
 import { FieldTypes } from '@constants/formConfig';
@@ -7,23 +7,38 @@ import { classroomStudentStateOptions } from '@constants/masterData';
 import useListBase from '@hooks/useListBase';
 import useTranslate from '@hooks/useTranslate';
 import { commonMessage } from '@locales/intl';
-import { Button, Empty, Tag, Modal } from 'antd';
-import React from 'react';
-import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Button, Empty, Tag, Modal, Tooltip } from 'antd';
+import React, { useEffect, useRef } from 'react';
+import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { DATE_FORMAT_DISPLAY } from '@constants';
 import useFetch from '@hooks/useFetch';
 import dayjs from 'dayjs';
+import { showSuccessMessage, showErrorMessage } from '@services/notifyService';
 
 const ClassroomStudentistPage = ({ pageOptions }) => {
     const translate = useTranslate();
     const location = useLocation();
-    const navigate = useNavigate();
     const { pathname: pagePath } = useLocation();
     const search = location.search;
     const { id } = useParams();
-    const [searchParams] = useSearchParams();
-    const classroomName = searchParams.get('classroomName');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const initialClassroomName = useRef(searchParams.get('classroomName'));
+    useEffect(() => {
+        if (initialClassroomName.current && !searchParams.has('classroomName')) {
+            searchParams.set('classroomName', initialClassroomName.current);
+            setSearchParams(searchParams, { replace: true });
+        }
+    }, [searchParams, setSearchParams]);
     const stateValue = translate.formatKeys(classroomStudentStateOptions, ['label']);
+    const { data: classroomDetail } = useFetch(apiConfig.classroom.getById, {
+        immediate: true,
+        pathParams: { id },
+    });
+    const displayClassroomName =
+        searchParams.get('classroomName') ||
+        classroomDetail?.data?.course?.name ||
+        classroomDetail?.data?.name ||
+        '';
     const { execute: executeChangeState } = useFetch(apiConfig.classroomStudent.changeState);
     const approveState = classroomStudentStateOptions[1].value;
     const rejectState = classroomStudentStateOptions[2].value;
@@ -78,10 +93,17 @@ const ClassroomStudentistPage = ({ pageOptions }) => {
                                                     id: record.id,
                                                     state: approveState,
                                                 },
-                                            }).then((res) => {
-                                                if (res && res.result) {
-                                                    mixinFuncs.getList();
-                                                }
+                                                onCompleted: (response) => {
+                                                    if (response.result === true) {
+                                                        showSuccessMessage('Duyệt sinh viên thành công!');
+                                                        mixinFuncs.getList();
+                                                    } else {
+                                                        showErrorMessage('Duyệt sinh viên thất bại!');
+                                                    }
+                                                },
+                                                onError: (error) => {
+                                                    showErrorMessage(error?.message || 'Đã có lỗi xảy ra khi thực hiện thao tác!');
+                                                },
                                             });
                                         },
                                     });
@@ -112,10 +134,17 @@ const ClassroomStudentistPage = ({ pageOptions }) => {
                                                     id: record.id,
                                                     state: rejectState,
                                                 },
-                                            }).then((res) => {
-                                                if (res && res.result) {
-                                                    mixinFuncs.getList();
-                                                }
+                                                onCompleted: (response) => {
+                                                    if (response.result === true) {
+                                                        showSuccessMessage('Từ chối sinh viên thành công!');
+                                                        mixinFuncs.getList();
+                                                    } else {
+                                                        showErrorMessage('Từ chối sinh viên thất bại!');
+                                                    }
+                                                },
+                                                onError: (error) => {
+                                                    showErrorMessage(error?.message || 'Đã có lỗi xảy ra khi thực hiện thao tác!');
+                                                },
                                             });
                                         },
                                     });
@@ -216,7 +245,7 @@ const ClassroomStudentistPage = ({ pageOptions }) => {
     ];
 
     return (
-        <PageWrapper routes={pageOptions.renderBreadcrumbs(commonMessage, translate, classroomName)}>
+        <PageWrapper routes={pageOptions.renderBreadcrumbs(commonMessage, translate, displayClassroomName)}>
             <ListPage
                 searchForm={mixinFuncs.renderSearchForm({ fields: searchFields, initialValues: queryFilter })}
                 actionBar={mixinFuncs.renderActionBar()}

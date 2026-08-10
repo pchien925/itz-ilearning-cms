@@ -11,6 +11,13 @@ import { Button, Empty, Tag } from 'antd';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useFetch from '@hooks/useFetch';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import { DEFAULT_FORMAT } from '@constants';
+
+dayjs.extend(utc);
+dayjs.extend(customParseFormat);
 
 const ClassroomListPage = ({ pageOptions }) => {
     const translate = useTranslate();
@@ -20,15 +27,15 @@ const ClassroomListPage = ({ pageOptions }) => {
     const search = location.search;
     const stateValue = translate.formatKeys(classroomStateOptions, ['label']);
 
-    const { data: courseListData } = useFetch(apiConfig.course.getList, {
-        immediate: true,
-        mappingData: (response) => response?.data?.content || [],
-    });
+    // const { data: courseListData } = useFetch(apiConfig.course.getList, {
+    //     immediate: true,
+    //     mappingData: (response) => response?.data?.content || [],
+    // });
 
-    const courseOptions = (courseListData || []).map((c) => ({
-        value: String(c.id),
-        label: c.name,
-    }));
+    // const courseOptions = (courseListData || []).map((c) => ({
+    //     value: String(c.id),
+    //     label: c.name,
+    // }));
 
 
     const { data, mixinFuncs, queryFilter, loading, pagination } = useListBase({
@@ -141,19 +148,29 @@ const ClassroomListPage = ({ pageOptions }) => {
             title: translate.formatMessage(commonMessage.startDate),
             dataIndex: 'startDate',
             width: 140,
-            render: (date) => date || '-',
+            render: (date) => {
+                if (!date) return '-';
+                return dayjs.utc(date, DEFAULT_FORMAT).local().format(DEFAULT_FORMAT);
+            },
         },
         {
             title: translate.formatMessage(commonMessage.endDate),
             dataIndex: 'endDate',
             width: 140,
-            render: (date) => date || '-',
+            render: (date) => {
+                if (!date) return '-';
+                return dayjs.utc(date, DEFAULT_FORMAT).local().format(DEFAULT_FORMAT);
+            },
         },
         {
             title: translate.formatMessage(commonMessage.price),
             dataIndex: 'price',
             width: 140,
             align: 'right',
+            render: (price) => {
+                if (price == null) return '-';
+                return `${price.toLocaleString('vi-VN')} đ`;
+            },
         },
         {
             title: translate.formatMessage(commonMessage.state),

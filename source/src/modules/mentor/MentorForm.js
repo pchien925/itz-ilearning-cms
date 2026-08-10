@@ -5,7 +5,7 @@ import { statusOptions } from '@constants/masterData';
 import useBasicForm from '@hooks/useBasicForm';
 import useFetch from '@hooks/useFetch';
 import useTranslate from '@hooks/useTranslate';
-import { AutoCompleteField, BaseForm, CropImageField, PasswordField, SelectField, TextField, TextAreaField } from '@itz/react-cms-element';
+import { AutoCompleteField, BaseForm, CropImageField, PasswordField, SelectField, TextField } from '@itz/react-cms-element';
 import { commonMessage } from '@locales/intl';
 import { showErrorMessage, showSuccessMessage } from '@services/notifyService';
 import { checkEmail, checkFullName, checkPassword, checkPhone, checkUserName } from '@itz/react-utils';
@@ -122,24 +122,24 @@ const MentorForm = (props) => {
                         <TextField
                             label={translate.formatMessage(commonMessage.phone)}
                             name="phone"
-                            // rules={[
-                            //     {
-                            //         required: true,  
-                            //         validator: checkPhone,
-                            //     },
-                            // ]}
+                            rules={[
+                                {
+                                    required: true,  
+                                    validator: checkPhone,
+                                },
+                            ]}
                         />
                     </Col>
                     <Col span={12}>
                         <TextField
                             label={translate.formatMessage(commonMessage.email)}
                             name="email"
-                            // rules={[
-                            //     {
-                            //         required: true,
-                            //         validator: checkEmail,
-                            //     },
-                            // ]}
+                            rules={[
+                                {
+                                    required: true,
+                                    validator: checkEmail,
+                                },
+                            ]}
                         />
                     </Col>
                     <Col span={12}>
@@ -182,7 +182,7 @@ const MentorForm = (props) => {
                         <TextField
                             label={translate.formatMessage(commonMessage.description)}
                             name="description"
-                            type="textarea" // THÊM DÒNG NÀY ĐỂ BIẾN NÓ THÀNH Ô NHẬP NHIỀU DÒNG
+                            type="textarea"
                             autoSize={{ minRows: 4, maxRows: 8 }}
                             rules={[
                                 {

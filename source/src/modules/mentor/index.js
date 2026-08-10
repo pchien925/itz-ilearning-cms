@@ -10,8 +10,6 @@ import { commonMessage } from '@locales/intl';
 import { Button, Empty } from 'antd';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import useFetch from '@hooks/useFetch';
-import { showErrorMessage, showSuccessMessage } from '@itz/react-utils';
 
 const MentorListPage = ({ pageOptions }) => {
     const translate = useTranslate();
