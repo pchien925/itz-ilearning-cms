@@ -36,6 +36,12 @@ export const navMenuConfig = [
         icon: <SettingOutlined />,
         children: [
             {
+                label: <FormattedMessage defaultMessage="Khoá học" />,
+                key: 'course',
+                path: routes.courseListPage.path,
+                permission: [apiConfig.course.getList.permissionCode],
+            },
+            {
                 label: <FormattedMessage defaultMessage="Lớp học" />,
                 key: 'classroom',
                 path: routes.classroomListPage.path,

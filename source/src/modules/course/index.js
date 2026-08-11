@@ -1,9 +1,9 @@
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { BaseTable, PageWrapper, ListPage, BaseTooltip, TextClamp } from '@itz/react-cms-element';
+import { DeleteOutlined, EditOutlined, UserOutlined } from '@ant-design/icons';
+import { BaseTable, PageWrapper, ListPage, BaseTooltip, TextClamp, AvatarField } from '@itz/react-cms-element';
 import { DEFAULT_TABLE_ITEM_SIZE } from '@constants';
 import apiConfig from '@constants/apiConfig';
 import { FieldTypes } from '@constants/formConfig';
-import { classroomStateOptions } from '@constants/masterData';
+import { statusOptions } from '@constants/masterData';
 import useListBase from '@hooks/useListBase';
 import useTranslate from '@hooks/useTranslate';
 import { commonMessage } from '@locales/intl';
@@ -11,37 +11,20 @@ import { Button, Empty, Tag } from 'antd';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useFetch from '@hooks/useFetch';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { DEFAULT_FORMAT } from '@constants';
+import { AppConstants } from '@constants';
 import { formatMoney } from '@itz/react-utils';
 
-dayjs.extend(utc);
-dayjs.extend(customParseFormat);
-
-const ClassroomListPage = ({ pageOptions }) => {
+const CourseListPage = ({ pageOptions }) => {
     const translate = useTranslate();
     const location = useLocation();
     const navigate = useNavigate();
     const { pathname: pagePath } = useLocation();
     const search = location.search;
-    const stateValue = translate.formatKeys(classroomStateOptions, ['label']);
-
-    // const { data: courseListData } = useFetch(apiConfig.course.getList, {
-    //     immediate: true,
-    //     mappingData: (response) => response?.data?.content || [],
-    // });
-
-    // const courseOptions = (courseListData || []).map((c) => ({
-    //     value: String(c.id),
-    //     label: c.name,
-    // }));
-
+    const statusValue = translate.formatKeys(statusOptions, ['label']);
 
     const { data, mixinFuncs, queryFilter, loading, pagination } = useListBase({
         apiConfig: {
-            ...apiConfig.classroom,
+            ...apiConfig.course,
         },
         options: {
             pageSize: DEFAULT_TABLE_ITEM_SIZE,
@@ -68,12 +51,7 @@ const ClassroomListPage = ({ pageOptions }) => {
             };
             funcs.additionalActionColumnButtons = () => ({
                 edit: (record) => {
-
-                    const canEdit = record.state === 0;
-
-                    const hasPerm = mixinFuncs.hasPermission([apiConfig.classroom.update.permissionCode]);
-
-                    const isDisabled = !hasPerm || !canEdit;
+                    const hasPerm = mixinFuncs.hasPermission([apiConfig.course.update.permissionCode]);
 
                     return (
                         <BaseTooltip type="edit" objectName={translate.formatMessage(pageOptions.objectName)}>
@@ -86,7 +64,7 @@ const ClassroomListPage = ({ pageOptions }) => {
                                 }}
                                 type="link"
                                 style={{ padding: 0 }}
-                                disabled={isDisabled}
+                                disabled={!hasPerm}
                             >
                                 <EditOutlined />
                             </Button>
@@ -94,7 +72,7 @@ const ClassroomListPage = ({ pageOptions }) => {
                     );
                 },
                 delete: (record) => {
-                    const hasPerm = mixinFuncs.hasPermission([apiConfig.classroom.delete.permissionCode]);
+                    const hasPerm = mixinFuncs.hasPermission([apiConfig.course.delete.permissionCode]);
                     return (
                         <BaseTooltip type="delete" objectName={translate.formatMessage(pageOptions.objectName)}>
                             <Button
@@ -120,24 +98,40 @@ const ClassroomListPage = ({ pageOptions }) => {
         {
             title: '#',
             align: 'left',
-            width: 40,
+            width: 50,
             render: (_, record, index) => (pagination.current - 1) * pagination.pageSize + index + 1,
         },
         {
-            title: translate.formatMessage(commonMessage.course),
-            dataIndex: ['course', 'name'],
+            title: translate.formatMessage(commonMessage.avatar),
+            dataIndex: 'avatar',
+            align: 'left',
+            width: 50,
+            render: (avatar) => {
+                return (
+                    <AvatarField
+                        size="large"
+                        icon={<UserOutlined />}
+                        src={avatar ? `${AppConstants.avatarRootUrl}${avatar}` : null}
+                    />
+                );
+            },
+        },
+        {
+            title: translate.formatMessage(commonMessage.courseName),
+            dataIndex: 'name',
             width: 500,
             render: (name, record) => {
-                if (!record.course) return '-';
+                if (!record.name) return '-';
                 return (
                     <div
                         style={{ color: '#1890ff', cursor: 'pointer', fontWeight: 400 }}
                         onClick={(e) => {
                             e.stopPropagation();
                             const id = record.id;
-                            // Mã hóa tên để đưa lên query param (đổi khoảng trắng thành %20, v.v.)
                             const encodedName = encodeURIComponent(name);
-                            navigate(`/classroom/${id}/student?classroomName=${encodedName}`);
+                            navigate(mixinFuncs.getItemDetailLink(record), {
+                                state: { action: 'edit', prevPath: location.pathname },
+                            });
                         }}
                     >
                         <TextClamp lineClamp={2}>{name}</TextClamp>
@@ -146,27 +140,15 @@ const ClassroomListPage = ({ pageOptions }) => {
             },
         },
         {
-            title: translate.formatMessage(commonMessage.startDate),
-            dataIndex: 'startDate',
-            width: 140,
-            render: (date) => {
-                if (!date) return '-';
-                return dayjs.utc(date, DEFAULT_FORMAT).local().format(DEFAULT_FORMAT);
-            },
-        },
-        {
-            title: translate.formatMessage(commonMessage.endDate),
-            dataIndex: 'endDate',
-            width: 140,
-            render: (date) => {
-                if (!date) return '-';
-                return dayjs.utc(date, DEFAULT_FORMAT).local().format(DEFAULT_FORMAT);
-            },
+            title: translate.formatMessage(commonMessage.totalTimeline),
+            dataIndex: 'totalTimeline',
+            width: 150,
+            align: 'right',
         },
         {
             title: translate.formatMessage(commonMessage.price),
             dataIndex: 'price',
-            width: 140,
+            width: 150,
             align: 'right',
             render: (price) => {
                 if (price == null) return '-';
@@ -177,47 +159,26 @@ const ClassroomListPage = ({ pageOptions }) => {
                 });
             },
         },
-        {
-            title: translate.formatMessage(commonMessage.state),
-            dataIndex: 'state',
-            width: 140,
-            align: 'center',
-            render: (stateValue) => {
-                const option = classroomStateOptions.find((item) => item.value === stateValue);
-                if (!option) return null;
-                return (
-                    <Tag color={option.color} style={{ display: 'inline-block', width: '100%', textAlign: 'center', fontSize: 14 }}>
-                        <div style={{ padding: '0 4px', fontSize: 14 }}>
-                            {translate.formatMessage(option.label)}
-                        </div>
-                    </Tag>
-                );
-            },
-        },
+        mixinFuncs.renderStatusColumn({ width: 120 }),
         mixinFuncs.renderActionColumn(
             {
                 edit: true,
                 delete: true,
             },
-            { width: 150, align: 'right' },
+            { width: 120, align: 'center' },
         ),
     ];
 
     const searchFields = [
         {
-            key: 'courseId',
-            placeholder: translate.formatMessage(commonMessage.course),
-            type: FieldTypes.AUTOCOMPLETE,
-            apiConfig: apiConfig.course.autocomplete,
-            mappingOptions: (item) => ({ label: item.name, value: item.id }),
-            useFetch: useFetch,
-            submitOnChanged: true,
+            key: 'name',
+            placeholder: translate.formatMessage(commonMessage.courseName),
         },
         {
-            key: 'state',
-            placeholder: translate.formatMessage(commonMessage.state),
+            key: 'status',
+            placeholder: translate.formatMessage(commonMessage.status),
             type: FieldTypes.SELECT,
-            options: stateValue,
+            options: statusValue,
             submitOnChanged: true,
         },
     ];
@@ -245,4 +206,4 @@ const ClassroomListPage = ({ pageOptions }) => {
     );
 };
 
-export default ClassroomListPage;
+export default CourseListPage;

@@ -344,6 +344,48 @@ const apiConfig = {
             permissionCode: 'COU_D',
         },
     },
+    student: {
+        update: {
+            baseURL: `${apiUrl}v1/student/update`,
+            method: 'PUT',
+            headers: baseHeader,
+            permissionCode: 'STU_U',
+        },
+        create: {
+            baseURL: `${apiUrl}v1/student/create`,
+            method: 'POST',
+            headers: baseHeader,
+            permissionCode: 'STU_C',
+        },
+        profile: {
+            baseURL: `${apiUrl}v1/student/profile`,
+            method: 'GET',
+            headers: baseHeader,
+        },
+        getList: {
+            baseURL: `${apiUrl}v1/student/list`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'STU_L',
+        },
+        getById: {
+            baseURL: `${apiUrl}v1/student/get/:id`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'STU_V',
+        },
+        autocomplete: {
+            baseURL: `${apiUrl}v1/student/auto-complete`,
+            method: 'GET',
+            headers: baseHeader,
+        },
+        delete: {
+            baseURL: `${apiUrl}v1/student/delete/:id`,
+            method: 'DELETE',
+            headers: baseHeader,
+            permissionCode: 'STU_D',
+        },
+    },
 };
 
 export default apiConfig;

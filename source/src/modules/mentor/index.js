@@ -23,8 +23,6 @@ const MentorListPage = ({ pageOptions }) => {
     const { data, mixinFuncs, queryFilter, loading, pagination } = useListBase({
         apiConfig: {
             ...apiConfig.mentor,
-            create: apiConfig.mentor.create,
-            update: apiConfig.mentor.update,
         },
         options: {
             pageSize: DEFAULT_TABLE_ITEM_SIZE,
@@ -95,7 +93,7 @@ const MentorListPage = ({ pageOptions }) => {
     const columns = [
         {
             title: '#',
-            dataIndex: 'avatarPath',
+            dataIndex: ['account', 'avatarPath'],
             align: 'center',
             width: 100,
             render: (avatar) => {

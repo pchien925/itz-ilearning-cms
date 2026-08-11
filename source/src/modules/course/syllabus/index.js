@@ -15,7 +15,7 @@ import useFetch from '@hooks/useFetch';
 import dayjs from 'dayjs';
 import { showSuccessMessage, showErrorMessage } from '@services/notifyService';
 
-const ClassroomStudentListPage = ({ pageOptions }) => {
+const SyllabusListPage = ({ pageOptions }) => {
     const translate = useTranslate();
     const location = useLocation();
     const navigate = useNavigate();
@@ -360,4 +360,4 @@ const ClassroomStudentListPage = ({ pageOptions }) => {
     );
 };
 
-export default ClassroomStudentListPage;
+export default SyllabusListPage;
