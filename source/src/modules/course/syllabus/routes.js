@@ -1,27 +1,28 @@
 import apiConfig from '@constants/apiConfig';
 import { commonMessage } from '@locales/intl';
-import ClassroomStudentListPage from '.';
+import SyllabusDragDropPage from '.';
+
+
 
 const paths = {
-    classroomsListPage: '/classrooms',
-    classroomStudentsListPage: '/classroom/:id/student',
+    coursesListPage: '/courses',
+    syllabusDragDropPage: '/course/:id/syllabus',
 };
 
 export default {
-    ClassroomStudentListPage: {
-        path: paths.classroomStudentsListPage,
+    syllabusDragDropPage: {
+        path: paths.syllabusDragDropPage,
         auth: true,
-        component: ClassroomStudentListPage,
-        permission: [apiConfig.classroomStudent.getList.permissionCode],
+        component: SyllabusDragDropPage,
+        permission: [apiConfig.syllabus.getList.permissionCode],
         pageOptions: {
-            objectName: commonMessage.student,
+            objectName: commonMessage.syllabus,
             renderBreadcrumbs: (messages, t, title, options = {}) => {
                 return [
-                    { breadcrumbName: t.formatMessage(messages.classroom), path: paths.classroomsListPage },
+                    { breadcrumbName: t.formatMessage(messages.course), path: paths.coursesListPage },
                     { breadcrumbName: title },
                 ];
             },
         },
     },
-    
 };

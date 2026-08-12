@@ -1,75 +1,68 @@
-import { DeleteOutlined, CheckOutlined, CloseOutlined, PlusOutlined, SaveOutlined, StopOutlined } from '@ant-design/icons';
-import { BaseTable, PageWrapper, ListPage, BaseTooltip, AutoCompleteField } from '@itz/react-cms-element';
-import { DEFAULT_TABLE_ITEM_SIZE } from '@constants';
+import { DeleteOutlined, EditOutlined, PlusOutlined, SaveOutlined, MenuOutlined, UserOutlined, StopOutlined } from '@ant-design/icons';
+import DefaultAvatar from '@assets/images/avatar-default.png';
+import { BaseTable, PageWrapper, ListPage, BaseTooltip, AvatarField, TextClamp, TextField, CropImageField, SelectField } from '@itz/react-cms-element';
+import { AppConstants } from '@constants';
 import apiConfig from '@constants/apiConfig';
-import { FieldTypes } from '@constants/formConfig';
-import { classroomStudentStateOptions } from '@constants/masterData';
+import { syllabusKindOptions } from '@constants/masterData';
 import useListBase from '@hooks/useListBase';
 import useTranslate from '@hooks/useTranslate';
 import { commonMessage } from '@locales/intl';
-import { Button, Empty, Tag, Modal, Tooltip, Form, Select, Spin, Row, Col } from 'antd';
-import React, { useState } from 'react';
+import { Button, Space, Modal, Form, Row, Col } from 'antd';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { DATE_FORMAT_DISPLAY } from '@constants';
+import useDragDrop from '@hooks/useDragDrop';
+import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import useFetch from '@hooks/useFetch';
-import dayjs from 'dayjs';
-import { showSuccessMessage, showErrorMessage } from '@services/notifyService';
+import { showSuccessMessage, showErrorMessage } from '@itz/react-utils';
 
-const SyllabusListPage = ({ pageOptions }) => {
+const DraggableRow = (props) => {
+    const rowKey = props['data-row-key']?.toString();
+
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+        id: rowKey,
+    });
+
+    const style = {
+        ...props.style,
+        transform: CSS.Transform.toString(transform && { ...transform, scaleY: 1 }),
+        transition,
+        ...(isDragging ? { position: 'relative', zIndex: 9999, background: '#fafafa', boxShadow: '0 5px 15px rgba(0,0,0,0.1)' } : {}),
+    };
+
+    return <tr {...props} ref={setNodeRef} style={style} {...attributes} {...listeners} />;
+};
+
+const SyllabusDragDropPage = ({ pageOptions }) => {
     const translate = useTranslate();
     const location = useLocation();
     const navigate = useNavigate();
     const { pathname: pagePath } = useLocation();
     const search = location.search;
     const { id } = useParams();
-    const [searchParams, setSearchParams] = useSearchParams();
-    const [displayName] = useState(searchParams.get('classroomName'));
-    const stateValue = translate.formatKeys(classroomStudentStateOptions, ['label']);
-    const { execute: executeChangeState } = useFetch(apiConfig.classroomStudent.changeState);
-    const { execute: executeCreateStudent, loading: loadingCreate } = useFetch(apiConfig.classroomStudent.registerByStudent);
-    const approveState = classroomStudentStateOptions[1].value;
-    const rejectState = classroomStudentStateOptions[2].value;
+    const [searchParams] = useSearchParams();
+    const [courseName] = useState(searchParams.get('courseName') || 'Giáo trình');
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+    const [imageUrl, setImageUrl] = useState(null);
+    const [editingRecord, setEditingRecord] = useState(null);
     const [form] = Form.useForm();
-    const selectedStudent = Form.useWatch('studentId', form);
-
+    const { execute: executeUpFile } = useFetch(apiConfig.file.upload);
+    const { execute: executeCreate, loading: loadingCreate } = useFetch(apiConfig.syllabus.create);
+    const { execute: executeUpdate, loading: loadingUpdate } = useFetch(apiConfig.syllabus.update);
+    const { execute: executeDelete } = useFetch(apiConfig.syllabus.delete);
+    const syllabusValue = translate.formatKeys(syllabusKindOptions, ['label']);
+    const kindValue = Form.useWatch('kind', form);
+    const syllabusNameValue = Form.useWatch('name', form);
 
     const { data, mixinFuncs, queryFilter, loading, pagination } = useListBase({
-        apiConfig: {
-            ...apiConfig.classroomStudent,
-            changeStatus: apiConfig.classroomStudent.changeState,
-            create: null,
-        },
+        apiConfig: apiConfig.syllabus,
         options: {
-            pageSize: DEFAULT_TABLE_ITEM_SIZE,
-            objectName: translate.formatMessage(pageOptions.objectName),
+            pageSize: 1000,
+            objectName: translate.formatMessage(pageOptions?.objectName || { id: 'syllabus', defaultMessage: 'Giáo trình' }),
         },
         override: (funcs) => {
-            funcs.renderActionBar = () => {
-                return (
-                    <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', justifyContent: 'flex-end' }}>
-                        <Button
-                            type="primary"
-                            icon={<PlusOutlined />}
-                            onClick={() => setIsAddModalVisible(true)}
-                        >
-                            Thêm học viên
-                        </Button>
-                    </div>
-                );
-            };
-            funcs.changeFilter = (filter) => {
-                const filterParts = Object.keys(filter)
-                    .filter(key => filter[key] !== undefined && filter[key] !== null && filter[key] !== '')
-                    .map(key => `${key}=${encodeURIComponent(filter[key])}`);
-                const tailPart = `classroomName=${encodeURIComponent(displayName)}`;
-                const finalQueryString = filterParts.length > 0
-                    ? `?${filterParts.join('&')}&${tailPart}`
-                    : `?${tailPart}`;
-                navigate(`${pagePath}${finalQueryString}`, { replace: true });
-            };
             funcs.mappingData = (response) => {
-
                 if (response.result === true) {
                     return {
                         data: response.data.content,
@@ -77,7 +70,6 @@ const SyllabusListPage = ({ pageOptions }) => {
                     };
                 }
             };
-
             funcs.getItemDetailLink = (dataRow) => {
                 return `${pagePath}/${dataRow.id}${search}`;
             };
@@ -85,272 +77,464 @@ const SyllabusListPage = ({ pageOptions }) => {
                 const params = mixinFuncs.prepareGetListParams(queryFilter);
                 mixinFuncs.handleFetchList({
                     ...params,
-                    classroomId: id,
+                    courseId: id,
                 });
             };
-            funcs.additionalActionColumnButtons = () => ({
-                approve: (record) => {
-                    if (record.state === approveState || record.state === rejectState) return null;
-                    const hasPerm = mixinFuncs.hasPermission([apiConfig.classroomStudent.changeState.permissionCode]);
-                    return (
-                        <BaseTooltip title="Duyệt" objectName={translate.formatMessage(pageOptions.objectName)}>
-                            <Button
-                                type="link"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    Modal.confirm({
-                                        title: 'Xác nhận Duyệt',
-                                        content: 'Bạn có chắc chắn muốn duyệt sinh viên này?',
-                                        onOk: () => {
-                                            executeChangeState({
-                                                data: {
-                                                    id: record.id,
-                                                    state: approveState,
-                                                },
-                                                onCompleted: (response) => {
-                                                    if (response.result === true) {
-                                                        showSuccessMessage('Duyệt sinh viên thành công!');
-                                                        mixinFuncs.getList();
-                                                    } else {
-                                                        showErrorMessage('Duyệt sinh viên thất bại!');
-                                                    }
-                                                },
-                                                onError: (error) => {
-                                                    showErrorMessage(error?.message || 'Đã có lỗi xảy ra khi thực hiện thao tác!');
-                                                },
-                                            });
-                                        },
-                                    });
-                                }}
-                                disabled={!hasPerm}
-                                style={{ padding: 0 }}
-                            >
-                                <CheckOutlined style={{ color: !hasPerm ? '' : 'green' }} />
-                            </Button>
-                        </BaseTooltip>
-                    );
-                },
-                reject: (record) => {
-                    if (record.state === approveState || record.state === rejectState) return null;
-                    const hasPerm = mixinFuncs.hasPermission([apiConfig.classroomStudent.changeState.permissionCode]);
-                    return (
-                        <BaseTooltip title="Từ chối" objectName={translate.formatMessage(pageOptions.objectName)}>
-                            <Button
-                                type="link"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    Modal.confirm({
-                                        title: 'Xác nhận Từ chối',
-                                        content: 'Bạn có chắc chắn muốn từ chối sinh viên này?',
-                                        onOk: () => {
-                                            executeChangeState({
-                                                data: {
-                                                    id: record.id,
-                                                    state: rejectState,
-                                                },
-                                                onCompleted: (response) => {
-                                                    if (response.result === true) {
-                                                        showSuccessMessage('Từ chối sinh viên thành công!');
-                                                        mixinFuncs.getList();
-                                                    } else {
-                                                        showErrorMessage('Từ chối sinh viên thất bại!');
-                                                    }
-                                                },
-                                                onError: (error) => {
-                                                    showErrorMessage(error?.message || 'Đã có lỗi xảy ra khi thực hiện thao tác!');
-                                                },
-                                            });
-                                        },
-                                    });
-                                }}
-                                disabled={!hasPerm}
-                                style={{ padding: 0 }}
-                            >
-                                <CloseOutlined style={{ color: !hasPerm ? '' : 'red' }} />
-                            </Button>
-                        </BaseTooltip>
-                    );
-                },
-                delete: (record) => {
-                    const hasPerm = mixinFuncs.hasPermission([apiConfig.classroomStudent.delete.permissionCode]);
-                    return (
-                        <BaseTooltip type="delete" objectName={translate.formatMessage(pageOptions.objectName)}>
-                            <Button
-                                type="link"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    mixinFuncs.showDeleteItemConfirm(record.id);
-                                }}
-                                disabled={!hasPerm}
-                                style={{ padding: 0 }}
-                            >
-                                <DeleteOutlined style={{ color: !hasPerm ? '' : 'red' }} />
-                            </Button>
-                        </BaseTooltip>
-                    );
-                },
-
-            });
         },
     });
 
-    const columns = [
-        {
-            title: '#',
-            align: 'left',
-            width: 60,
-            render: (_, record, index) => (pagination.current - 1) * pagination.pageSize + index + 1,
+    const {
+        sortedData,
+        isOrderingChanged,
+        handleUpdate,
+        loading: loadingUpdateOrder,
+        onDragEnd,
+    } = useDragDrop({
+        data: data,
+        apiConfig: apiConfig.syllabus.updateOrdering,
+        indexField: 'ordering',
+        getExtraFields: (item, index, sortList) => {
+            let currentChapterId = 0;
+            if (item.kind === 2) {
+                for (let i = index - 1; i >= 0; i--) {
+                    if (sortList[i].kind === 1) {
+                        currentChapterId = sortList[i].id;
+                        break;
+                    }
+                }
+            } else if (item.kind === 1) {
+                currentChapterId = 0;
+            }
+            return { chapterId: currentChapterId };
         },
-        {
-            title: translate.formatMessage(commonMessage.fullName),
-            dataIndex: ['student', 'account', 'fullName'],
+        onUpdateSuccess: () => {
+            mixinFuncs.getList();
         },
-        {
-            title: translate.formatMessage(commonMessage.email),
-            dataIndex: ['student', 'account', 'email'],
-            width: 140,
-        },
-        {
-            title: translate.formatMessage(commonMessage.phone),
-            dataIndex: ['student', 'account', 'phone'],
-            width: 140,
-        },
-        {
-            title: translate.formatMessage(commonMessage.dateRegistration),
-            dataIndex: 'dateRegistration',
-            width: 150,
-            render: (date) => date ? dayjs(date).format(DATE_FORMAT_DISPLAY) : '-',
-        },
-        {
-            title: translate.formatMessage(commonMessage.state),
-            dataIndex: 'state',
-            width: 160,
-            align: 'center',
-            render: (stateValue) => {
-                const option = classroomStudentStateOptions.find((item) => item.value === stateValue);
-                if (!option) return null;
-                return (
-                    <Tag color={option.color} style={{ display: 'inline-block', width: '70%', textAlign: 'center', fontSize: 14 }}>
-                        <div style={{ padding: '0 4px', fontSize: 14 }}>
-                            {translate.formatMessage(option.label)}
-                        </div>
-                    </Tag>
-                );
-            },
-        },
-        mixinFuncs.renderActionColumn(
-            {
-                approve: true,
-                reject: true,
-                delete: true,
-            },
-            { width: 150, align: 'center' },
-        ),
-    ];
+    });
 
-    const searchFields = [
-        {
-            key: 'state',
-            placeholder: translate.formatMessage(commonMessage.state),
-            type: FieldTypes.SELECT,
-            options: stateValue,
-            submitOnChanged: true,
-        },
-    ];
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 5,
+            },
+        }),
+    );
 
-    const onFinishAddStudent = (values) => {
-        executeCreateStudent({
+    const handleDragEnd = ({ active, over }) => {
+        if (active && over && active.id !== over.id) {
+            onDragEnd({ id: active.id }, { id: over.id });
+        }
+    };
+
+    const uploadFile = (file, onSuccess, onError) => {
+        executeUpFile({
             data: {
-                ...values,
-                classroomId: id,
+                type: 'AVATAR',
+                file: file,
             },
             onCompleted: (response) => {
                 if (response.result === true) {
-                    showSuccessMessage('Thêm học viên thành công!');
-                    setIsAddModalVisible(false);
-                    form.resetFields();
-                    mixinFuncs.getList();
-                } else {
-                    showErrorMessage('Thêm học viên thất bại!');
+                    onSuccess();
+                    setImageUrl(response.data.filePath);
+                    form.setFieldsValue({ avatar: response.data.filePath });
+                    showSuccessMessage('Upload file thành công !');
                 }
             },
             onError: (error) => {
-                showErrorMessage(error?.message || 'Đã có lỗi xảy ra!');
+                if (error.code === 'ERROR-FILE-FORMAT-INVALID') {
+                    showErrorMessage('File upload không hợp lệ !');
+                }
             },
         });
     };
 
-    return (
-        <PageWrapper routes={pageOptions.renderBreadcrumbs(commonMessage, translate, displayName)}>
-            <ListPage
-                searchForm={mixinFuncs.renderSearchForm({ fields: searchFields, initialValues: queryFilter })}
+    const openAddModal = () => {
+        setEditingRecord(null);
+        form.resetFields();
+        setImageUrl(null);
+        setIsAddModalVisible(true);
+    };
 
-                actionBar={mixinFuncs.renderActionBar()}
-                baseTable={
-                    <BaseTable
-                        onChange={mixinFuncs.changePagination}
-                        columns={columns}
-                        dataSource={data}
-                        loading={loading}
-                        rowKey={(record) => record.id}
-                        pagination={pagination}
-                        locale={{
-                            emptyText: <Empty description={translate.formatMessage(commonMessage.noData)} />,
+    const openEditModal = (record) => {
+        setEditingRecord(record);
+        setImageUrl(record.avatar || null);
+        form.setFieldsValue({
+            name: record.name,
+            kind: record.kind,
+            timeline: record.timeline,
+            description: record.description,
+            avatar: record.avatar,
+        });
+        setIsAddModalVisible(true);
+    };
+
+    const getNearestChapterId = (list, currentId) => {
+        const index = list.findIndex((item) => item.id === currentId);
+        if (index === -1) return 0;
+
+        for (let i = index - 1; i >= 0; i--) {
+            if (list[i].kind === 1) {
+                return list[i].id;
+            }
+        }
+        return 0;
+    };
+
+    const onFinishSyllabus = (values) => {
+        const totalItems = pagination?.total || data?.length || 0;
+        let chapterId = 0;
+
+        if (values.kind === 2 && editingRecord) {
+            chapterId = getNearestChapterId(sortedData, editingRecord.id);
+        }
+
+        const payload = {
+            ...values,
+            avatar: imageUrl,
+            courseId: id,
+            chapterId,
+            timeline: values.timeline ?? 0,
+        };
+
+        if (editingRecord) {
+            executeUpdate({
+                data: {
+                    ...payload,
+                    id: editingRecord.id,
+                },
+                onCompleted: (response) => {
+                    if (response.result === true) {
+                        showSuccessMessage('Cập nhật giáo trình thành công!');
+                        closeModal();
+                        mixinFuncs.getList();
+                    } else {
+                        showErrorMessage('Cập nhật giáo trình thất bại!');
+                    }
+                },
+                onError: (error) => {
+                    showErrorMessage(error?.message || 'Đã có lỗi xảy ra!');
+                },
+            });
+        } else {
+            executeCreate({
+                data: {
+                    ...payload,
+                    ordering: totalItems,
+                },
+                onCompleted: (response) => {
+                    if (response.result === true) {
+                        showSuccessMessage('Thêm giáo trình thành công!');
+                        closeModal();
+                        mixinFuncs.getList();
+                    } else {
+                        showErrorMessage('Thêm giáo trình thất bại!');
+                    }
+                },
+                onError: (error) => {
+                    showErrorMessage(error?.message || 'Đã có lỗi xảy ra!');
+                },
+            });
+        }
+    };
+
+    const handleDelete = (record) => {
+        const chapterId = record.kind === 2 ? getNearestChapterId(sortedData, record.id) : 0;
+
+        Modal.confirm({
+            title: 'Xác nhận xoá',
+            content: `Bạn có chắc chắn muốn xoá "${record.name}"?`,
+            okText: 'Xoá',
+            okType: 'danger',
+            cancelText: 'Huỷ',
+            onOk: () => {
+                executeDelete({
+                    pathParams: { id: record.id },
+                    params: { chapterId },
+                    onCompleted: (response) => {
+                        if (response.result === true) {
+                            showSuccessMessage('Xoá giáo trình thành công!');
+                            mixinFuncs.getList();
+                        } else {
+                            showErrorMessage(response?.message || 'Xoá giáo trình thất bại!');
+                        }
+                    },
+                    onError: (error) => {
+                        showErrorMessage(error?.message || 'Đã có lỗi xảy ra!');
+                    },
+                });
+            },
+        });
+    };
+
+
+    const closeModal = () => {
+        setIsAddModalVisible(false);
+        form.resetFields();
+        setImageUrl(null);
+        setEditingRecord(null);
+    };
+
+    mixinFuncs.renderActionBar = () => {
+        return (
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={openAddModal}
+                >
+                    Thêm mới
+                </Button>
+                <Button
+                    type="primary"
+                    icon={<SaveOutlined />}
+                    loading={loadingUpdateOrder}
+                    disabled={!isOrderingChanged}
+                    onClick={() => handleUpdate(sortedData, false)}
+                >
+                    Cập nhật vị trí
+                </Button>
+            </div>
+        );
+    };
+
+    const columns = [
+        {
+            title: '',
+            key: 'sort',
+            width: 50,
+            align: 'center',
+            render: () => <MenuOutlined style={{ cursor: 'move', color: '#505050' }} />,
+        },
+        {
+            title: 'Avatar',
+            dataIndex: 'avatar',
+            width: 100,
+            align: 'left',
+            render: (avatar, record) => {
+                const isChapter = record.kind === 1;
+                return (
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: isChapter ? 'flex-start' : 'flex-end',
+                            padding: '0 8px',
                         }}
-                    />
+                    >
+                        <AvatarField
+                            size="large"
+                            icon={<UserOutlined />}
+                            src={avatar ? `${AppConstants.avatarRootUrl}${avatar}` : null}
+                        />
+                    </div>
+                );
+            },
+        },
+        {
+            title: 'Tên giáo trình',
+            dataIndex: 'name',
+            render: (name, record) => {
+                const isChapter = record.kind === 1;
+                return (
+                    <span>
+                        <TextClamp lineClamp={2}>{name}</TextClamp>
+                    </span>
+                );
+            },
+        },
+        {
+            title: 'Thời lượng',
+            dataIndex: 'timeline',
+            width: 150,
+            align: 'right',
+        },
+        {
+            title: 'Hành động',
+            width: 140,
+            align: 'center',
+            render: (text, record) => {
+                const hasEditPerm = mixinFuncs.hasPermission([apiConfig.syllabus.update.permissionCode]);
+                const hasDeletePerm = mixinFuncs.hasPermission([apiConfig.syllabus.delete.permissionCode]);
+                const objectNameStr = translate.formatMessage(pageOptions?.objectName || { id: 'syllabus', defaultMessage: 'Giáo trình' });
+
+                return (
+                    <Space size="middle">
+                        <BaseTooltip type="edit" objectName={objectNameStr}>
+                            <Button
+                                type="link"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    openEditModal(record);
+                                }}
+                                disabled={!hasEditPerm}
+                                style={{ padding: 0 }}
+                            >
+                                <EditOutlined style={{ color: !hasEditPerm ? '' : '#1890ff' }} />
+                            </Button>
+                        </BaseTooltip>
+
+                        <BaseTooltip type="delete" objectName={objectNameStr}>
+                            <Button
+                                type="link"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(record);
+                                }}
+                                disabled={!hasDeletePerm}
+                                style={{ padding: 0 }}
+                            >
+                                <DeleteOutlined style={{ color: !hasDeletePerm ? '' : 'red' }} />
+                            </Button>
+                        </BaseTooltip>
+                    </Space>
+                );
+            },
+        },
+    ];
+
+    const rowClassName = (record) => {
+        return record.kind === 1 ? 'table-row-phase' : '';
+    };
+
+    return (
+        <PageWrapper routes={pageOptions.renderBreadcrumbs(commonMessage, translate, courseName)}>
+            <style>{`
+                .table-row-phase {
+                    background-color: #adadad !important;
                 }
-            />
+                .ant-table-tbody > tr:active {
+                    cursor: grabbing;
+                }
+            `}</style>
+            <div style={{ width: '50vw' }}>
+                <ListPage
+                    searchForm={mixinFuncs.renderSearchForm({ fields: [], initialValues: queryFilter })}
+                    actionBar={mixinFuncs.renderActionBar()}
+                    baseTable={
+                        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+                            <SortableContext items={sortedData.map((i) => i.id?.toString())} strategy={verticalListSortingStrategy}>
+                                <BaseTable
+                                    components={{
+                                        body: {
+                                            row: DraggableRow,
+                                        },
+                                    }}
+                                    onChange={mixinFuncs.changePagination}
+                                    columns={columns}
+                                    dataSource={sortedData}
+                                    loading={loading}
+                                    rowKey={(record) => record.id}
+                                    pagination={false}
+                                    rowClassName={rowClassName}
+                                    scroll={{ x: false }}
+                                />
+                            </SortableContext>
+                        </DndContext>
+                    }
+                />
+            </div>
             <Modal
-                title="Thêm học viên"
+                title="Thêm mới giáo trình"
                 open={isAddModalVisible}
-                onCancel={() => {
-                    setIsAddModalVisible(false);
-                    form.resetFields();
-                }}
+                onCancel={closeModal}
                 footer={null}
                 destroyOnClose
                 centered
+                width={800}
             >
                 <Form
                     form={form}
                     layout="vertical"
-                    onFinish={onFinishAddStudent}
+                    onFinish={onFinishSyllabus}
                 >
-                    <AutoCompleteField
-                        name="studentId"
-                        label="Học viên"
-                        placeholder="Học viên"
-                        apiConfig={apiConfig.student.autocomplete}
-                        mappingOptions={(item) => ({
-                            label: item.account?.fullName,
-                            value: item.id,
-                        })}
-                        searchParams={(text) => ({ fullName: text })}
-                        required
-                        useFetch={useFetch}
-                    />
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <CropImageField
+                                label={translate.formatMessage(commonMessage.avatar)}
+                                name="avatar"
+                                imageUrl={imageUrl ? `${AppConstants.avatarRootUrl}${imageUrl}` : DefaultAvatar}
+                                aspect={1 / 1}
+                                uploadFile={uploadFile}
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            />
+                        </Col>
+                    </Row>
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <TextField
+                                label={translate.formatMessage(commonMessage.syllabusName)}
+                                placeholder={translate.formatMessage(commonMessage.syllabusName)}
+                                name="name"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            />
+                        </Col>
+                        <Col span={12}>
+                            <SelectField
+                                name='kind'
+                                label={translate.formatMessage(commonMessage.kind)}
+                                placeholder={translate.formatMessage(commonMessage.kind)}
+                                allowClear={false}
+                                options={syllabusValue}
+                                initialValue={1}
+                                disabled={editingRecord}
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            />
+                        </Col>
+                        {kindValue === 2 && (
+                            <Col span={12}>
+                                <TextField
+                                    label={translate.formatMessage(commonMessage.timeline)}
+                                    placeholder={translate.formatMessage(commonMessage.timeline)}
+                                    name="timeline"
+                                    rules={[
+                                        {
+                                            required: true,
+                                        },
+                                    ]}
+                                />
+                            </Col>
+                        )}
+                        <Col span={24}>
+                            <TextField
+                                label={translate.formatMessage(commonMessage.description)}
+                                placeholder={translate.formatMessage(commonMessage.description)}
+                                name="description"
+                                type="textarea"
+                                autoSize={{ minRows: 6, maxRows: 10 }}
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            />
+                        </Col>
+                    </Row>
                     <Row justify="end" gutter={12} style={{ marginTop: 24 }}>
                         <Col>
-                            <Button
-                                danger
-                                onClick={() => {
-                                    setIsAddModalVisible(false);
-                                    form.resetFields();
-                                }}
-                                icon={<StopOutlined />}
-                            >
-                                {translate.formatMessage(commonMessage.cancel || { id: 'cancel', defaultMessage: 'Hủy' })}
+                            <Button danger onClick={closeModal} icon={<StopOutlined />}>
+                                Hủy
                             </Button>
                         </Col>
                         <Col>
                             <Button
                                 type="primary"
                                 htmlType="submit"
-                                loading={loadingCreate}
+                                loading={editingRecord ? loadingUpdate : loadingCreate}
                                 icon={<SaveOutlined />}
-                                disabled={!selectedStudent}
+                                disabled={!syllabusNameValue}
                             >
-                                {translate.formatMessage({ id: 'create', defaultMessage: 'Thêm mới' })}
+                                {editingRecord ? 'Cập nhật' : 'Thêm mới'}
                             </Button>
                         </Col>
                     </Row>
@@ -360,4 +544,4 @@ const SyllabusListPage = ({ pageOptions }) => {
     );
 };
 
-export default SyllabusListPage;
+export default SyllabusDragDropPage;

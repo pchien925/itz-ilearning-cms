@@ -129,8 +129,8 @@ const CourseListPage = ({ pageOptions }) => {
                             e.stopPropagation();
                             const id = record.id;
                             const encodedName = encodeURIComponent(name);
-                            navigate(mixinFuncs.getItemDetailLink(record), {
-                                state: { action: 'edit', prevPath: location.pathname },
+                            navigate(`/course/${record.id}/syllabus`, {
+                                state: { action: 'view', prevPath: location.pathname },
                             });
                         }}
                     >

@@ -7,6 +7,7 @@ import mentorsRoutes from '@modules/mentor/routes';
 import classroomRoutes from '@modules/classroom/routes';
 import classroomStudentRoutes from '@modules/classroom/classroomStudent/routes';
 import courseRoutes from '@modules/course/routes';
+import syllabusRoutes from '@modules/course/syllabus/routes';
 /*
 	auth
 		+ null: access login and not login
@@ -44,6 +45,7 @@ const routes = {
     ...classroomRoutes,
     ...classroomStudentRoutes,
     ...courseRoutes,
+    ...syllabusRoutes,
 
     // keep this at last
     notFound: {

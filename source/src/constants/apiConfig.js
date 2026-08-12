@@ -188,7 +188,7 @@ const apiConfig = {
             method: 'GET',
             headers: baseHeader,
             permissionCode: 'MEN_L',
-        },getList: {
+        }, getList: {
             baseURL: `${apiUrl}v1/mentor/list`,
             method: 'GET',
             headers: baseHeader,
@@ -384,6 +384,48 @@ const apiConfig = {
             method: 'DELETE',
             headers: baseHeader,
             permissionCode: 'STU_D',
+        },
+    },
+    syllabus: {
+        updateOrdering: {
+            baseURL: `${apiUrl}v1/syllabus/update-ordering`,
+            method: 'PUT',
+            headers: baseHeader,
+        },
+        update: {
+            baseURL: `${apiUrl}v1/syllabus/update`,
+            method: 'PUT',
+            headers: baseHeader,
+            permissionCode: 'SYL_U',
+        },
+        create: {
+            baseURL: `${apiUrl}v1/syllabus/create`,
+            method: 'POST',
+            headers: baseHeader,
+            permissionCode: 'SYL_C',
+        },
+        getPublicList: {
+            baseURL: `${apiUrl}v1/syllabus/public/list`,
+            method: 'GET',
+            headers: baseHeader,
+        },
+        getList: {
+            baseURL: `${apiUrl}v1/syllabus/list`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'SYL_L',
+        },
+        getById: {
+            baseURL: `${apiUrl}v1/syllabus/get/:id`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'SYL_V',
+        },
+        delete: {
+            baseURL: `${apiUrl}v1/syllabus/delete/:id`,
+            method: 'DELETE',
+            headers: baseHeader,
+            permissionCode: 'SYL_D',
         },
     },
 };
