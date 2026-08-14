@@ -1,6 +1,6 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined, SaveOutlined, MenuOutlined, UserOutlined, StopOutlined } from '@ant-design/icons';
 import DefaultAvatar from '@assets/images/avatar-default.png';
-import { BaseTable, PageWrapper, ListPage, BaseTooltip, AvatarField, TextClamp, TextField, CropImageField, SelectField } from '@itz/react-cms-element';
+import { PageWrapper, ListPage, BaseTooltip, AvatarField, TextClamp, TextField, CropImageField, SelectField, DragDropTableV2 } from '@itz/react-cms-element';
 import { AppConstants } from '@constants';
 import apiConfig from '@constants/apiConfig';
 import { syllabusKindOptions } from '@constants/masterData';
@@ -8,31 +8,11 @@ import useListBase from '@hooks/useListBase';
 import useTranslate from '@hooks/useTranslate';
 import { commonMessage } from '@locales/intl';
 import { Button, Space, Modal, Form, Row, Col } from 'antd';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useLocation, useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import useDragDrop from '@hooks/useDragDrop';
-import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import useFetch from '@hooks/useFetch';
 import { showSuccessMessage, showErrorMessage } from '@itz/react-utils';
-
-const DraggableRow = (props) => {
-    const rowKey = props['data-row-key']?.toString();
-
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-        id: rowKey,
-    });
-
-    const style = {
-        ...props.style,
-        transform: CSS.Transform.toString(transform && { ...transform, scaleY: 1 }),
-        transition,
-        ...(isDragging ? { position: 'relative', zIndex: 9999, background: '#fafafa', boxShadow: '0 5px 15px rgba(0,0,0,0.1)' } : {}),
-    };
-
-    return <tr {...props} ref={setNodeRef} style={style} {...attributes} {...listeners} />;
-};
 
 const SyllabusDragDropPage = ({ pageOptions }) => {
     const translate = useTranslate();
@@ -93,6 +73,8 @@ const SyllabusDragDropPage = ({ pageOptions }) => {
         data: data,
         apiConfig: apiConfig.syllabus.updateOrdering,
         indexField: 'ordering',
+        validateOrder: (list) => list.length === 0 || list[0]?.kind === 1,
+        invalidOrderMessage: 'Chương phải luôn đứng đầu danh sách!',
         getExtraFields: (item, index, sortList) => {
             let currentChapterId = 0;
             if (item.kind === 2) {
@@ -112,15 +94,7 @@ const SyllabusDragDropPage = ({ pageOptions }) => {
         },
     });
 
-    const sensors = useSensors(
-        useSensor(PointerSensor, {
-            activationConstraint: {
-                distance: 5,
-            },
-        }),
-    );
-
-    const handleDragEnd = ({ active, over }) => {
+    const handleDragEnd = (active, over) => {
         if (active && over && active.id !== over.id) {
             onDragEnd({ id: active.id }, { id: over.id });
         }
@@ -410,25 +384,17 @@ const SyllabusDragDropPage = ({ pageOptions }) => {
                     searchForm={mixinFuncs.renderSearchForm({ fields: [], initialValues: queryFilter })}
                     actionBar={mixinFuncs.renderActionBar()}
                     baseTable={
-                        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-                            <SortableContext items={sortedData.map((i) => i.id?.toString())} strategy={verticalListSortingStrategy}>
-                                <BaseTable
-                                    components={{
-                                        body: {
-                                            row: DraggableRow,
-                                        },
-                                    }}
-                                    onChange={mixinFuncs.changePagination}
-                                    columns={columns}
-                                    dataSource={sortedData}
-                                    loading={loading}
-                                    rowKey={(record) => record.id}
-                                    pagination={false}
-                                    rowClassName={rowClassName}
-                                    scroll={{ x: false }}
-                                />
-                            </SortableContext>
-                        </DndContext>
+                        <DragDropTableV2
+                            dataSource={sortedData}
+                            onDragEnd={handleDragEnd}
+                            onChange={mixinFuncs.changePagination}
+                            columns={columns}
+                            loading={loading}
+                            rowKey={(record) => record.id}
+                            pagination={false}
+                            rowClassName={rowClassName}
+                            scroll={{ x: false }}
+                        />
                     }
                 />
             </div>

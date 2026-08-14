@@ -28,17 +28,6 @@ const ClassroomListPage = ({ pageOptions }) => {
     const search = location.search;
     const stateValue = translate.formatKeys(classroomStateOptions, ['label']);
 
-    // const { data: courseListData } = useFetch(apiConfig.course.getList, {
-    //     immediate: true,
-    //     mappingData: (response) => response?.data?.content || [],
-    // });
-
-    // const courseOptions = (courseListData || []).map((c) => ({
-    //     value: String(c.id),
-    //     label: c.name,
-    // }));
-
-
     const { data, mixinFuncs, queryFilter, loading, pagination } = useListBase({
         apiConfig: {
             ...apiConfig.classroom,

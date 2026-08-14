@@ -129,7 +129,7 @@ const CourseListPage = ({ pageOptions }) => {
                             e.stopPropagation();
                             const id = record.id;
                             const encodedName = encodeURIComponent(name);
-                            navigate(`/course/${record.id}/syllabus`, {
+                            navigate(`/course/${id}/syllabus?courseName=${encodedName}`, {
                                 state: { action: 'view', prevPath: location.pathname },
                             });
                         }}
