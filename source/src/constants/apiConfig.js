@@ -428,6 +428,43 @@ const apiConfig = {
             permissionCode: 'SYL_D',
         },
     },
+    rating: {
+        update: {
+            baseURL: `${apiUrl}v1/rating/update`,
+            method: 'PUT',
+            headers: baseHeader,
+            permissionCode: 'RAT_U',
+        },
+        create: {
+            baseURL: `${apiUrl}v1/rating/create`,
+            method: 'POST',
+            headers: baseHeader,
+            permissionCode: 'RAT_C',
+        },
+        getPublicList: {
+            baseURL: `${apiUrl}v1/rating/public/list`,
+            method: 'GET',
+            headers: baseHeader,
+        },
+        getList: {
+            baseURL: `${apiUrl}v1/rating/list`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'RAT_L',
+        },
+        getById: {
+            baseURL: `${apiUrl}v1/rating/get/:id`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'RAT_V',
+        },
+        delete: {
+            baseURL: `${apiUrl}v1/rating/delete/:id`,
+            method: 'DELETE',
+            headers: baseHeader,
+            permissionCode: 'RAT_D',
+        },
+    },
 };
 
 export default apiConfig;

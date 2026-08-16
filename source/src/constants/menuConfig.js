@@ -1,4 +1,4 @@
-import { UsergroupAddOutlined, SettingOutlined } from '@ant-design/icons';
+import { UsergroupAddOutlined, SettingOutlined, BookOutlined } from '@ant-design/icons';
 import routes from '@routes';
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
@@ -33,7 +33,7 @@ export const navMenuConfig = [
     {
         label: <FormattedMessage defaultMessage="Quản lý khoá học" />,
         key: 'classroom-management',
-        icon: <SettingOutlined />,
+        icon: <BookOutlined />,
         children: [
             {
                 label: <FormattedMessage defaultMessage="Khoá học" />,
@@ -46,6 +46,12 @@ export const navMenuConfig = [
                 key: 'classroom',
                 path: routes.classroomListPage.path,
                 permission: [apiConfig.classroom.getList.permissionCode],
+            },
+            {
+                label: <FormattedMessage defaultMessage="Đánh giá" />,
+                key: 'rating',
+                path: routes.ratingListPage.path,
+                permission: [apiConfig.rating.getList.permissionCode],
             },
         ],
     },
