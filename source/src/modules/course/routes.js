@@ -15,7 +15,7 @@ export default {
         component: CourseListPage,
         permission: [apiConfig.course.getList.permissionCode],
         pageOptions: {
-            objectName: commonMessage.courseInfo,
+            objectName: commonMessage.course,
             renderBreadcrumbs: (messages, t, title, options = {}) => {
                 return [{ breadcrumbName: t.formatMessage(messages.course) }];
             },

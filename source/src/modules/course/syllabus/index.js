@@ -1,6 +1,7 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined, SaveOutlined, UserOutlined } from '@ant-design/icons';
 import { PageWrapper, ListPage, BaseTooltip, AvatarField, TextClamp, DragDropTableV2 } from '@itz/react-cms-element';
 import { AppConstants } from '@constants';
+import classNames from 'classnames/bind';
 import apiConfig from '@constants/apiConfig';
 import { syllabusKindOptions } from '@constants/masterData';
 import useListBase from '@hooks/useListBase';
@@ -12,6 +13,10 @@ import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import useDragDrop from '@hooks/useDragDrop';
 import useDisclosure from '@hooks/useDisclosure';
 import SyllabusModal from './SyllabusModal';
+import styles from './main.module.scss';
+
+const cx = classNames.bind(styles);
+
 
 const SyllabusDragDropPage = ({ pageOptions }) => {
     const translate = useTranslate();
@@ -20,7 +25,7 @@ const SyllabusDragDropPage = ({ pageOptions }) => {
     const search = location.search;
     const { id } = useParams();
     const [searchParams] = useSearchParams();
-    const [courseName] = useState(searchParams.get('courseName') || 'Giáo trình');
+    const courseName = searchParams.get('courseName');
     const [isModalOpen, { open: openModal, close: closeModal }] = useDisclosure(false);
     const [editingRecord, setEditingRecord] = useState(null);
     const syllabusValue = translate.formatKeys(syllabusKindOptions, ['label']);
@@ -39,9 +44,6 @@ const SyllabusDragDropPage = ({ pageOptions }) => {
                         total: response.data.totalElements,
                     };
                 }
-            };
-            funcs.getItemDetailLink = (dataRow) => {
-                return `${pagePath}/${dataRow.id}${search}`;
             };
             funcs.getList = () => {
                 const params = mixinFuncs.prepareGetListParams(queryFilter);
@@ -235,19 +237,11 @@ const SyllabusDragDropPage = ({ pageOptions }) => {
     ];
 
     const rowClassName = (record) => {
-        return record.kind === 1 ? 'table-row-phase' : '';
+        return record.kind === 1 ? cx('table-row-phase') : '';
     };
 
     return (
-        <PageWrapper routes={pageOptions.renderBreadcrumbs(commonMessage, translate, courseName)}>
-            <style>{`
-                .table-row-phase {
-                    background-color: #adadad !important;
-                }
-                .ant-table-tbody > tr:active {
-                    cursor: grabbing;
-                }
-            `}</style>
+        <PageWrapper className={cx('syllabus-drag-drop-page')} routes={pageOptions.renderBreadcrumbs(commonMessage, translate, courseName)}>
             <div style={{ width: '50vw' }}>
                 <ListPage
                     searchForm={mixinFuncs.renderSearchForm({ fields: [], initialValues: queryFilter })}

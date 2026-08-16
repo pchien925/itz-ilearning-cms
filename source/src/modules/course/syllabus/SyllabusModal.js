@@ -10,9 +10,13 @@ import { defineMessages } from 'react-intl';
 import SyllabusForm from './SyllabusForm';
 
 const message = defineMessages({
-    modalTitle: {
-        id: 'module.syllabus.modal.title',
+    modalTitleCreate: {
+        id: 'module.rating.modal.title.create',
         defaultMessage: 'Thêm mới giáo trình',
+    },
+    modalTitleUpdate: {
+        id: 'module.rating.modal.title.update',
+        defaultMessage: 'Chỉnh sửa giáo trình',
     },
     cancelConfirmTitle: {
         id: 'module.syllabus.modal.cancelConfirm.title',
@@ -228,7 +232,11 @@ const SyllabusModal = ({
 
     return (
         <Modal
-            title={translate.formatMessage(message.modalTitle)}
+            title={
+                editingRecord
+                    ? translate.formatMessage(message.modalTitleUpdate)
+                    : translate.formatMessage(message.modalTitleCreate)
+            }
             open={open}
             onCancel={handleCancel}
             footer={null}
