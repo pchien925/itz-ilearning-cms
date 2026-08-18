@@ -1,0 +1,45 @@
+.wrapper {
+    display: flex;
+    justify-content: center;
+    margin: 16px 0;
+}
+
+.navButton {
+    color: rgba(0, 0, 0, 0.45);
+    span{
+        width: 12px;
+    }
+}
+
+.pageButton {
+    width: 30px;
+    background-color: transparent !important;
+    border: 0px !important;
+    
+    transition:none !important;
+
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.1) !important;
+        color: rgba(0, 0, 0, 1) !important;
+    }
+}
+
+.pageButtonActive {
+    width: 30px;
+    color: #1677ff !important;
+    background-color: transparent !important;
+    border-color:  #1677ff !important;
+    border-width: 1px !important;
+    box-shadow: none !important;
+    transition:none !important;
+}
+
+.addButton {
+    border: 0;
+    &:hover{
+        color: rgba(0, 0, 0, 0.88) !important;
+    }
+    svg{
+        width: 16px;
+    }
+}

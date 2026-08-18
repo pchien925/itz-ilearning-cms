@@ -1,4 +1,4 @@
-import { UsergroupAddOutlined, SettingOutlined, BookOutlined } from '@ant-design/icons';
+import { UsergroupAddOutlined, SettingOutlined, BookOutlined, BarChartOutlined } from '@ant-design/icons';
 import routes from '@routes';
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
@@ -56,6 +56,19 @@ export const navMenuConfig = [
         ],
     },
     {
+        label: <FormattedMessage defaultMessage="Báo cáo" />,
+        key: 'report',
+        icon: <BarChartOutlined />,
+        children: [
+            {
+                label: <FormattedMessage defaultMessage="Top học viên" />,
+                key: 'topStudent',
+                path: routes.topStudentListPage.path,
+                // permission: [apiConfig.rating.getList.permissionCode],
+            },
+        ],
+    },
+    {
         label: <FormattedMessage defaultMessage="Quản lý hệ thống" />,
         key: 'system-management',
         icon: <SettingOutlined />,
@@ -65,6 +78,13 @@ export const navMenuConfig = [
                 key: 'group-permission',
                 path: routes.groupPermissionListPage.path,
                 permission: [apiConfig.groupPermission.getGroupList.permissionCode],
+                isSuperAdmin: true,
+            },
+            {
+                label: <FormattedMessage defaultMessage="Cài đặt" />,
+                key: 'setting',
+                path: routes.settingsPage.path,
+                permission: [apiConfig.setting.getList.permissionCode],
                 isSuperAdmin: true,
             },
         ],

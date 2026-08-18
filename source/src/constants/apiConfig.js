@@ -465,6 +465,76 @@ const apiConfig = {
             permissionCode: 'RAT_D',
         },
     },
+    report: {
+        getTopStudent: {
+            baseURL: `${apiUrl}v1/report/top-student`,
+            method: 'GET',
+            headers: baseHeader,
+        },
+        getTopCourse: {
+            baseURL: `${apiUrl}v1/report/top-course`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'RPT_L',
+        },
+        exportExcelTopStudent: {
+            baseURL: `${apiUrl}v1/report/export-excel-top-student`,
+            method: 'GET',
+            headers: baseHeader,
+            responseType: 'blob',
+        },
+        exportExcelTopCourse: {
+            baseURL: `${apiUrl}v1/report/export-excel-top-course`,
+            method: 'GET',
+            headers: baseHeader,
+        },
+    },
+    setting: {
+        update: {
+            baseURL: `${apiUrl}v1/setting/update`,
+            method: 'PUT',
+            headers: baseHeader,
+            permissionCode: 'SET_U',
+        },
+        create: {
+            baseURL: `${apiUrl}v1/setting/create`,
+            method: 'POST',
+            headers: baseHeader,
+            permissionCode: 'SET_C',
+        },
+        getPublic: {
+            baseURL: `${apiUrl}v1/setting/public`,
+            method: 'GET',
+            headers: baseHeader,
+        },
+        getList: {
+            baseURL: `${apiUrl}v1/setting/list`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'SET_L',
+        },
+        getById: {
+            baseURL: `${apiUrl}v1/setting/get/:id`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'SET_V',
+        },
+        findByKey: {
+            baseURL: `${apiUrl}v1/setting/find-by-key`,
+            method: 'GET',
+            headers: baseHeader,
+        },
+        findByGroup: {
+            baseURL: `${apiUrl}v1/setting/find-by-group`,
+            method: 'GET',
+            headers: baseHeader,
+        },
+        autocomplete: {
+            baseURL: `${apiUrl}v1/setting/auto-complete`,
+            method: 'GET',
+            headers: baseHeader,
+        },
+    },
 };
 
 export default apiConfig;

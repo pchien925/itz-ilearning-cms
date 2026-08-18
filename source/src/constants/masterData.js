@@ -240,3 +240,13 @@ export const daysOfWeekSchedule = [
 export const settingKeysOptions = {
     ALLOW_ANONYMOUS: 'allowAnonymous',
 };
+
+export const sliderTypeAction = {
+    LINK: 1,
+    POPUP: 2,
+};
+ 
+export const sliderTypeActionOptions = [
+    { value: sliderTypeAction.LINK, label: 'Mở đường dẫn' },
+    { value: sliderTypeAction.POPUP, label: 'Mở popup' },
+];
