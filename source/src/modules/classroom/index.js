@@ -11,14 +11,7 @@ import { Button, Empty, Tag } from 'antd';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useFetch from '@hooks/useFetch';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { DEFAULT_FORMAT } from '@constants';
-import { formatMoney } from '@itz/react-utils';
-
-dayjs.extend(utc);
-dayjs.extend(customParseFormat);
+import { convertUtcToLocalTime, DEFAULT_FORMAT, formatMoney, orderNumber } from '@itz/react-utils';
 
 const ClassroomListPage = ({ pageOptions }) => {
     const translate = useTranslate();
@@ -110,7 +103,7 @@ const ClassroomListPage = ({ pageOptions }) => {
             title: '#',
             align: 'left',
             width: 40,
-            render: (_, record, index) => (pagination.current - 1) * pagination.pageSize + index + 1,
+            render: (_, record, index) => orderNumber(pagination, index, pagination.pageSize),
         },
         {
             title: translate.formatMessage(commonMessage.course),
@@ -124,7 +117,6 @@ const ClassroomListPage = ({ pageOptions }) => {
                         onClick={(e) => {
                             e.stopPropagation();
                             const id = record.id;
-                            // Mã hóa tên để đưa lên query param (đổi khoảng trắng thành %20, v.v.)
                             const encodedName = encodeURIComponent(name);
                             navigate(`/classroom/${id}/student?classroomName=${encodedName}`);
                         }}
@@ -140,7 +132,7 @@ const ClassroomListPage = ({ pageOptions }) => {
             width: 140,
             render: (date) => {
                 if (!date) return '-';
-                return dayjs.utc(date, DEFAULT_FORMAT).local().format(DEFAULT_FORMAT);
+                return convertUtcToLocalTime(date, DEFAULT_FORMAT, DEFAULT_FORMAT);
             },
         },
         {
@@ -149,7 +141,7 @@ const ClassroomListPage = ({ pageOptions }) => {
             width: 140,
             render: (date) => {
                 if (!date) return '-';
-                return dayjs.utc(date, DEFAULT_FORMAT).local().format(DEFAULT_FORMAT);
+                return convertUtcToLocalTime(date, DEFAULT_FORMAT, DEFAULT_FORMAT);
             },
         },
         {

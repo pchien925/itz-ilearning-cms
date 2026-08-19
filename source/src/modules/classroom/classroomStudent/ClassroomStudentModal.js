@@ -2,36 +2,29 @@ import React from 'react';
 import { Modal } from 'antd';
 import useTranslate from '@hooks/useTranslate';
 import { commonMessage } from '@locales/intl';
-import RatingForm from './RatingForm';
+import ClassroomStudentForm from './ClassroomStudentForm';
 
-const RatingModal = ({
+const ClassroomStudentModal = ({
     open,
     close,
-    dataDetail,
-    isEditing,
     onSubmit,
     isSubmitting,
-    objectName,
 }) => {
     const translate = useTranslate();
 
     return (
         <Modal
-            title={translate.formatMessage(isEditing ? commonMessage.editObject : commonMessage.addNewObject, {
-                objectName,
-            })}
+            title="Thêm học viên"
             open={open}
             onCancel={close}
             footer={null}
             destroyOnClose
             centered
             maskClosable={false}
-            width={800}
+            width={600}
         >
-            <RatingForm
-                formId="modal-rating-form"
-                dataDetail={dataDetail}
-                isEditing={isEditing}
+            <ClassroomStudentForm
+                formId="modal-classroom-student-form"
                 onSubmit={onSubmit}
                 onCancel={close}
                 isSubmitting={isSubmitting}
@@ -42,4 +35,4 @@ const RatingModal = ({
     );
 };
 
-export default RatingModal;
+export default ClassroomStudentModal;

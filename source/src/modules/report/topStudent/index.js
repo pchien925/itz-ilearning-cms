@@ -3,15 +3,16 @@ import { FileExcelOutlined } from '@ant-design/icons';
 import { DEFAULT_TABLE_ITEM_SIZE } from '@constants';
 import apiConfig from '@constants/apiConfig';
 import useListBase from '@hooks/useListBase';
+import { sendRequest } from '@services/api';
 import useTranslate from '@hooks/useTranslate';
 import { commonMessage } from '@locales/intl';
 import { Empty, Button } from 'antd';
 import React from 'react';
 import useFetch from '@hooks/useFetch';
+import { orderNumber } from '@itz/react-utils';
 
 const TopStudentListPage = ({ pageOptions }) => {
     const translate = useTranslate();
-    const { execute: executeExportExcel } = useFetch(apiConfig.report.exportExcelTopStudent);
 
     const { data, queryFilter, mixinFuncs, loading, pagination } = useListBase({
         apiConfig: {
@@ -35,10 +36,15 @@ const TopStudentListPage = ({ pageOptions }) => {
 
     const handleExportExcel = async () => {
         try {
-            const data = await executeExportExcel();
-            console.log('data: ',data);
+            const { data, error } = await sendRequest(
+                apiConfig.report.exportExcelTopStudent,
+                {
+                    params: {},
+                    mixinFuncs: { responseType: 'blob' },
+                },
+            );
 
-            if (!data) {
+            if (error || !data) {
                 throw new Error('No data returned');
             }
 
@@ -48,7 +54,7 @@ const TopStudentListPage = ({ pageOptions }) => {
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', `top-student-${Date.now()}.xlsx`);
+            link.setAttribute('download', `top-student.xlsx`);
             document.body.appendChild(link);
             link.click();
             link.remove();
@@ -80,7 +86,7 @@ const TopStudentListPage = ({ pageOptions }) => {
             title: '#',
             align: 'left',
             width: 60,
-            render: (_, record, index) => (pagination.current - 1) * pagination.pageSize + index + 1,
+            render: (_, record, index) => orderNumber(pagination, index, pagination.pageSize),
         },
         {
             title: translate.formatMessage(commonMessage.student),

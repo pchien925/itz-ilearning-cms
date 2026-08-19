@@ -55,7 +55,6 @@ const PageConfigForm = (props) => {
             onCompleted: (response) => {
                 if (response.result === true) {
                     onSuccess(response.data.filePath);
-                    console.log('BANNER');
                     form.setFieldValue(['slider', index, 'image'], response.data.filePath);
                     setSlider([...form.getFieldValue('slider')]);
                     setIsChangedFormValues(true);
@@ -87,7 +86,6 @@ const PageConfigForm = (props) => {
             try {
                 const parsedData = JSON.parse(dataDetail.valueData);
                 form.setFieldsValue(parsedData);
-                console.log(parsedData);
                 if (parsedData.slider && parsedData.slider.length > 0) {
                     setSlider(parsedData.slider);
                 }

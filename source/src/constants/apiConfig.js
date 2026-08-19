@@ -481,7 +481,6 @@ const apiConfig = {
             baseURL: `${apiUrl}v1/report/export-excel-top-student`,
             method: 'GET',
             headers: baseHeader,
-            responseType: 'blob',
         },
         exportExcelTopCourse: {
             baseURL: `${apiUrl}v1/report/export-excel-top-course`,

@@ -8,10 +8,6 @@ import { showErrorMessage } from '@services/notifyService';
 import React from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import CourseForm from './CourseForm';
-import { DEFAULT_FORMAT } from '@constants';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-dayjs.extend(utc);
 
 const CourseSavePage = ({ pageOptions }) => {
     const translate = useTranslate();

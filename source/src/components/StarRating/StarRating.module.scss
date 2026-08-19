@@ -1,9 +1,11 @@
 .star-rating {
     display: inline-flex;
+    align-items: center;
     gap: 10px;
 
     &__icon {
         font-size: 20px;
+        transition: color 0.2s ease;
 
         &--filled {
             color: #fadb14;

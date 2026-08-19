@@ -1,20 +1,18 @@
-import { DeleteOutlined, EditOutlined, UserOutlined } from '@ant-design/icons';
-import { BaseTable, PageWrapper, ListPage, BaseTooltip, TextClamp, AvatarField } from '@itz/react-cms-element';
-import { DEFAULT_TABLE_ITEM_SIZE } from '@constants';
+import { DeleteOutlined, EditOutlined, UserOutlined, ReloadOutlined } from '@ant-design/icons';
+import { BaseTable, PageWrapper, ListPage, BaseTooltip, AvatarField, TextField } from '@itz/react-cms-element';
+import { AppConstants, DEFAULT_TABLE_ITEM_SIZE, KIND_ADMIN, STATUS_DELETE } from '@constants';
 import apiConfig from '@constants/apiConfig';
 import { FieldTypes } from '@constants/formConfig';
 import { statusOptions } from '@constants/masterData';
 import useListBase from '@hooks/useListBase';
 import useTranslate from '@hooks/useTranslate';
 import { commonMessage } from '@locales/intl';
-import { Button, Empty, Tag } from 'antd';
+import { Button, Empty } from 'antd';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import useFetch from '@hooks/useFetch';
-import { AppConstants } from '@constants';
-import { formatMoney, orderNumber } from '@itz/react-utils';
+import { orderNumber } from '@itz/react-utils';
 
-const CourseListPage = ({ pageOptions }) => {
+const StudentListPage = ({ pageOptions }) => {
     const translate = useTranslate();
     const location = useLocation();
     const navigate = useNavigate();
@@ -24,7 +22,7 @@ const CourseListPage = ({ pageOptions }) => {
 
     const { data, mixinFuncs, queryFilter, loading, pagination } = useListBase({
         apiConfig: {
-            ...apiConfig.course,
+            ...apiConfig.student,
         },
         options: {
             pageSize: DEFAULT_TABLE_ITEM_SIZE,
@@ -51,8 +49,7 @@ const CourseListPage = ({ pageOptions }) => {
             };
             funcs.additionalActionColumnButtons = () => ({
                 edit: (record) => {
-                    const hasPerm = mixinFuncs.hasPermission([apiConfig.course.update.permissionCode]);
-
+                    const hasPerm = mixinFuncs.hasPermission([apiConfig.student.update.permissionCode]);
                     return (
                         <BaseTooltip type="edit" objectName={translate.formatMessage(pageOptions.objectName)}>
                             <Button
@@ -72,7 +69,8 @@ const CourseListPage = ({ pageOptions }) => {
                     );
                 },
                 delete: (record) => {
-                    const hasPerm = mixinFuncs.hasPermission([apiConfig.course.delete.permissionCode]);
+                    const isDelete = record?.status === STATUS_DELETE;
+                    const hasPerm = mixinFuncs.hasPermission([apiConfig.student.delete.permissionCode]);
                     return (
                         <BaseTooltip type="delete" objectName={translate.formatMessage(pageOptions.objectName)}>
                             <Button
@@ -81,35 +79,33 @@ const CourseListPage = ({ pageOptions }) => {
                                     e.stopPropagation();
                                     mixinFuncs.showDeleteItemConfirm(record.id);
                                 }}
-                                disabled={!hasPerm}
+                                disabled={!hasPerm || isDelete}
                                 style={{ padding: 0 }}
                             >
-                                <DeleteOutlined style={{ color: !hasPerm ? '' : 'red' }} />
+                                <DeleteOutlined style={{ color: (!hasPerm || isDelete) ? '' : 'red' }} />
                             </Button>
                         </BaseTooltip>
                     );
                 },
-
             });
         },
     });
-
     const columns = [
         {
             title: '#',
             align: 'left',
-            width: 50,
+            width: 60,
             render: (_, record, index) => orderNumber(pagination, index, pagination.pageSize),
         },
         {
             title: translate.formatMessage(commonMessage.avatar),
-            dataIndex: 'avatar',
+            dataIndex: ['account', 'avatarPath'],
             align: 'left',
-            width: 50,
+            width: 80,
             render: (avatar) => {
                 return (
                     <AvatarField
-                        size="large"
+                        size="default"
                         icon={<UserOutlined />}
                         src={avatar ? `${AppConstants.avatarRootUrl}${avatar}` : null}
                     />
@@ -117,62 +113,44 @@ const CourseListPage = ({ pageOptions }) => {
             },
         },
         {
-            title: translate.formatMessage(commonMessage.courseName),
-            dataIndex: 'name',
-            width: 500,
-            render: (name, record) => {
-                if (!record.name) return '-';
-                return (
-                    <div
-                        style={{ color: '#1890ff', cursor: 'pointer', fontWeight: 400 }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            const id = record.id;
-                            const encodedName = encodeURIComponent(name);
-                            navigate(`/course/${id}/syllabus?courseName=${encodedName}`, {
-                                state: { action: 'view', prevPath: location.pathname },
-                            });
-                        }}
-                    >
-                        <TextClamp lineClamp={2}>{name}</TextClamp>
-                    </div>
-                );
-            },
+            title: translate.formatMessage(commonMessage.fullName),
+            dataIndex: ['account', 'fullName'],
         },
         {
-            title: translate.formatMessage(commonMessage.totalTimeline),
-            dataIndex: 'totalTimeline',
-            width: 150,
-            align: 'right',
+            title: translate.formatMessage(commonMessage.email),
+            dataIndex: ['account', 'email'],
+            width: '240px',
         },
         {
-            title: translate.formatMessage(commonMessage.price),
-            dataIndex: 'price',
-            width: 150,
-            align: 'right',
-            render: (price) => {
-                if (price == null) return '-';
-                return formatMoney(price, {
-                    groupSeparator: '.',
-                    decimalSeparator: ',',
-                    currentcy: 'đ',
-                });
-            },
+            title: translate.formatMessage(commonMessage.phone),
+            dataIndex: ['account', 'phone'], width: 200,
         },
-        mixinFuncs.renderStatusColumn({ width: 120 }),
+        mixinFuncs.renderStatusColumn({ width: 160 }),
         mixinFuncs.renderActionColumn(
             {
                 edit: true,
                 delete: true,
             },
-            { width: 120, align: 'center' },
+            { width: 180, align: 'center' },
         ),
     ];
 
     const searchFields = [
         {
-            key: 'name',
-            placeholder: translate.formatMessage(commonMessage.courseName),
+            key: 'fullName',
+            placeholder: translate.formatMessage(commonMessage.fullName),
+        },
+        {
+            key: 'email',
+            placeholder: translate.formatMessage(commonMessage.email),
+            type: FieldTypes.STRING,
+            renderItem: () => <TextField placeholder={translate.formatMessage(commonMessage.email)} />,
+        },
+        {
+            key: 'phone',
+            placeholder: translate.formatMessage(commonMessage.phoneNumber),
+            type: FieldTypes.STRING,
+            renderItem: () => <TextField placeholder={translate.formatMessage(commonMessage.phoneNumber)} />,
         },
         {
             key: 'status',
@@ -206,4 +184,4 @@ const CourseListPage = ({ pageOptions }) => {
     );
 };
 
-export default CourseListPage;
+export default StudentListPage;

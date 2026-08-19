@@ -3,6 +3,8 @@ import { Button, Space } from 'antd';
 import { PlusOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import styles from './SliderPagination.module.scss';
 
+const MAX_SLIDER = 10;
+
 const SliderPagination = ({ activeIndex, setActiveIndex, slider, handleAddSlider }) => {
     return (
         <div className={styles.wrapper}>
@@ -24,7 +26,13 @@ const SliderPagination = ({ activeIndex, setActiveIndex, slider, handleAddSlider
                         {idx + 1}
                     </Button>
                 ))}
-                <Button className={styles.addButton} icon={<PlusOutlined />} onClick={handleAddSlider} type="dashed" />
+                <Button
+                    className={styles.addButton}
+                    icon={<PlusOutlined />}
+                    onClick={handleAddSlider}
+                    type="dashed"
+                    disabled={slider.length >= MAX_SLIDER}
+                />
                 {/* <Button
                     className={styles.navButton}
                     icon={<RightOutlined />}

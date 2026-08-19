@@ -12,11 +12,12 @@ import React, { useState } from 'react';
 import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import useDragDrop from '@hooks/useDragDrop';
 import useDisclosure from '@hooks/useDisclosure';
+import useFetch from '@hooks/useFetch';
+import { showSuccessMessage, showErrorMessage } from '@itz/react-utils';
 import SyllabusModal from './SyllabusModal';
 import styles from './main.module.scss';
 
 const cx = classNames.bind(styles);
-
 
 const SyllabusDragDropPage = ({ pageOptions }) => {
     const translate = useTranslate();
@@ -29,6 +30,10 @@ const SyllabusDragDropPage = ({ pageOptions }) => {
     const [isModalOpen, { open: openModal, close: closeModal }] = useDisclosure(false);
     const [editingRecord, setEditingRecord] = useState(null);
     const syllabusValue = translate.formatKeys(syllabusKindOptions, ['label']);
+
+    const { execute: executeUpFile } = useFetch(apiConfig.file.upload);
+    const { execute: executeCreate, loading: loadingCreate } = useFetch(apiConfig.syllabus.create);
+    const { execute: executeUpdate, loading: loadingUpdate } = useFetch(apiConfig.syllabus.update);
 
     const { data, mixinFuncs, queryFilter, loading } = useListBase({
         apiConfig: apiConfig.syllabus,
@@ -164,6 +169,62 @@ const SyllabusDragDropPage = ({ pageOptions }) => {
         return 0;
     };
 
+    const handleSubmit = (values) => {
+        const totalItems = sortedData?.length || 0;
+        let chapterId = 0;
+
+        if (values.kind === 2 && editingRecord) {
+            chapterId = getNearestChapterId(sortedData, editingRecord.id);
+        }
+
+        const payload = {
+            ...values,
+            courseId: id,
+            chapterId,
+            timeline: values.timeline ?? 0,
+        };
+
+        if (editingRecord) {
+            executeUpdate({
+                data: {
+                    ...payload,
+                    id: editingRecord.id,
+                },
+                onCompleted: (response) => {
+                    if (response.result === true) {
+                        showSuccessMessage('Cập nhật giáo trình thành công!');
+                        handleCloseModal();
+                        mixinFuncs.getList();
+                    } else {
+                        showErrorMessage('Cập nhật giáo trình thất bại!');
+                    }
+                },
+                onError: (error) => {
+                    showErrorMessage(error?.message || 'Đã có lỗi xảy ra!');
+                },
+            });
+        } else {
+            executeCreate({
+                data: {
+                    ...payload,
+                    ordering: totalItems,
+                },
+                onCompleted: (response) => {
+                    if (response.result === true) {
+                        showSuccessMessage('Thêm mới giáo trình thành công!');
+                        handleCloseModal();
+                        mixinFuncs.getList();
+                    } else {
+                        showErrorMessage('Thêm mới giáo trình thất bại!');
+                    }
+                },
+                onError: (error) => {
+                    showErrorMessage(error?.message || 'Đã có lỗi xảy ra!');
+                },
+            });
+        }
+    };
+
     mixinFuncs.renderActionBar = () => {
         return (
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
@@ -263,14 +324,14 @@ const SyllabusDragDropPage = ({ pageOptions }) => {
             </div>
             <SyllabusModal
                 open={isModalOpen}
-                onCancel={handleCloseModal}
-                editingRecord={editingRecord}
-                courseId={id}
-                sortedData={sortedData}
-                onSuccess={mixinFuncs.getList}
-                translate={translate}
-                commonMessage={commonMessage}
+                close={handleCloseModal}
+                dataDetail={editingRecord}
+                isEditing={!!editingRecord}
+                onSubmit={handleSubmit}
+                isSubmitting={loadingCreate || loadingUpdate}
+                objectName={translate.formatMessage(pageOptions?.objectName || { id: 'syllabus', defaultMessage: 'Giáo trình' })}
                 syllabusValue={syllabusValue}
+                executeUpFile={executeUpFile}
             />
         </PageWrapper>
     );

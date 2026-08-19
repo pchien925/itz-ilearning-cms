@@ -1,13 +1,65 @@
-import { TextField, AutoCompleteField } from '@itz/react-cms-element';
+import React, { useEffect, useState } from 'react';
+import { SaveOutlined, StopOutlined } from '@ant-design/icons';
+import { Button, Col, Form, Modal, Row } from 'antd';
+import useBasicForm from '@hooks/useBasicForm';
+import { BaseForm, TextField, AutoCompleteField } from '@itz/react-cms-element';
 import StarRatingInput from '@components/StarRating/StarRatingInput';
 import apiConfig from '@constants/apiConfig';
-import { Form, Row, Col } from 'antd';
-import React from 'react';
 import useFetch from '@hooks/useFetch';
 
-const RatingForm = ({ form, translate, commonMessage, editingRecord  }) => {
+const RatingForm = (props) => {
+    const {
+        formId,
+        dataDetail,
+        onSubmit,
+        onCancel,
+        isEditing,
+        isSubmitting,
+        translate,
+        commonMessage,
+    } = props;
+
+    const [isChangedFormValues, setIsChangedFormValues] = useState(false);
+
+    const { form, mixinFuncs, onValuesChange } = useBasicForm({
+        onSubmit,
+        setIsChangedFormValues,
+    });
+
+    const handleSubmit = (values) => {
+        return mixinFuncs.handleSubmit({ ...values });
+    };
+
+    useEffect(() => {
+        if (dataDetail) {
+            form.setFieldsValue({
+                student: dataDetail.student ? {
+                    label: dataDetail.student?.account?.fullName,
+                    value: dataDetail.student?.id,
+                    item: dataDetail.student,
+                } : undefined,
+                course: dataDetail.course ? {
+                    label: dataDetail.course?.name,
+                    value: dataDetail.course?.id,
+                    item: dataDetail.course,
+                } : undefined,
+                star: dataDetail.star,
+                ratingContent: dataDetail.message,
+            });
+        } else {
+            form.resetFields();
+        }
+    }, [dataDetail, form]);
+
     return (
-        <>
+        <BaseForm
+            id={formId}
+            onFinish={handleSubmit}
+            form={form}
+            layout="vertical"
+            onValuesChange={onValuesChange}
+            style={{ width: '100%' }}
+        >
             <Row gutter={16}>
                 <Col span={12}>
                     <AutoCompleteField
@@ -15,7 +67,7 @@ const RatingForm = ({ form, translate, commonMessage, editingRecord  }) => {
                         label={translate.formatMessage(commonMessage.student)}
                         placeholder={translate.formatMessage(commonMessage.student)}
                         allowClear={false}
-                        disabled={!!editingRecord}
+                        disabled={isEditing}
                         apiConfig={apiConfig.student.autocomplete}
                         mappingOptions={(item) => ({
                             label: item.account?.fullName,
@@ -46,7 +98,7 @@ const RatingForm = ({ form, translate, commonMessage, editingRecord  }) => {
                         label={translate.formatMessage(commonMessage.course)}
                         placeholder={translate.formatMessage(commonMessage.course)}
                         allowClear={false}
-                        disabled={!!editingRecord}
+                        disabled={isEditing}
                         apiConfig={apiConfig.course.autocomplete}
                         mappingOptions={(item) => ({
                             label: item.name,
@@ -72,7 +124,53 @@ const RatingForm = ({ form, translate, commonMessage, editingRecord  }) => {
                     />
                 </Col>
             </Row>
-        </>
+
+            <div className="footer-card-form">
+                <Row justify="end" gutter={12}>
+                    <Col>
+                        <Button
+                            danger
+                            key="cancel"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (isChangedFormValues) {
+                                    Modal.confirm({
+                                        title: translate.formatMessage(commonMessage.confirmCancel),
+                                        content: translate.formatMessage(commonMessage.confirmCancelContent),
+                                        cancelButtonProps: { danger: true },
+                                        onOk: () => {
+                                            setIsChangedFormValues(false);
+                                            onCancel();
+                                        },
+                                        okText: translate.formatMessage(commonMessage.yes),
+                                        cancelText: translate.formatMessage(commonMessage.no),
+                                    });
+                                } else {
+                                    onCancel();
+                                }
+                            }}
+                            icon={<StopOutlined />}
+                        >
+                            {translate.formatMessage(commonMessage.cancel)}
+                        </Button>
+                    </Col>
+                    <Col>
+                        <Button
+                            key="submit"
+                            htmlType="submit"
+                            type="primary"
+                            loading={isSubmitting}
+                            disabled={!isChangedFormValues}
+                            icon={<SaveOutlined />}
+                        >
+                            {isEditing
+                                ? translate.formatMessage(commonMessage.update)
+                                : translate.formatMessage(commonMessage.addNew)}
+                        </Button>
+                    </Col>
+                </Row>
+            </div>
+        </BaseForm>
     );
 };
 

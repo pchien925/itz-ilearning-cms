@@ -1,8 +1,9 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { BaseTable, PageWrapper, ListPage, BaseTooltip, TextClamp } from '@itz/react-cms-element';
 import StarRating from '@components/StarRating/StarRating';
-import { DEFAULT_TABLE_ITEM_SIZE, DEFAULT_FORMAT } from '@constants';
+import { DEFAULT_TABLE_ITEM_SIZE } from '@constants';
 import apiConfig from '@constants/apiConfig';
+import { errorCode } from '@constants/errorCode';
 import { FieldTypes } from '@constants/formConfig';
 import useListBase from '@hooks/useListBase';
 import useTranslate from '@hooks/useTranslate';
@@ -12,20 +13,21 @@ import { commonMessage } from '@locales/intl';
 import { Button, Empty } from 'antd';
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
+import { convertUtcToLocalTime, DEFAULT_FORMAT, orderNumber, showErrorMessage, showSuccessMessage } from '@itz/react-utils';
 import RatingModal from './RatingModal';
-
-dayjs.extend(utc);
-dayjs.extend(customParseFormat);
 
 const RatingListPage = ({ pageOptions }) => {
     const translate = useTranslate();
     const location = useLocation();
+    const objectName = translate.formatMessage(pageOptions?.objectName || { id: 'rating', defaultMessage: 'Đánh giá' });
 
     const [isModalOpen, { open: openModal, close: closeModal }] = useDisclosure(false);
-    const [editingRecord, setEditingRecord] = useState(null);
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
+
+    // Đưa hook gọi API Create & Update lên Page
+    const { execute: executeCreate, loading: loadingCreate } = useFetch(apiConfig.rating.create);
+    const { execute: executeUpdate, loading: loadingUpdate } = useFetch(apiConfig.rating.update);
 
     const { data, mixinFuncs, queryFilter, loading, pagination } = useListBase({
         apiConfig: {
@@ -33,7 +35,7 @@ const RatingListPage = ({ pageOptions }) => {
         },
         options: {
             pageSize: DEFAULT_TABLE_ITEM_SIZE,
-            objectName: translate.formatMessage(pageOptions?.objectName || { id: 'rating', defaultMessage: 'Đánh giá' }),
+            objectName: objectName,
         },
         override: (funcs) => {
             funcs.mappingData = (response) => {
@@ -49,7 +51,7 @@ const RatingListPage = ({ pageOptions }) => {
                     const hasPerm = mixinFuncs.hasPermission([apiConfig.rating.update.permissionCode]);
 
                     return (
-                        <BaseTooltip type="edit" objectName={translate.formatMessage(pageOptions?.objectName || { id: 'rating', defaultMessage: 'Đánh giá' })}>
+                        <BaseTooltip type="edit" objectName={objectName}>
                             <Button
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -67,7 +69,7 @@ const RatingListPage = ({ pageOptions }) => {
                 delete: (record) => {
                     const hasPerm = mixinFuncs.hasPermission([apiConfig.rating.delete.permissionCode]);
                     return (
-                        <BaseTooltip type="delete" objectName={translate.formatMessage(pageOptions?.objectName || { id: 'rating', defaultMessage: 'Đánh giá' })}>
+                        <BaseTooltip type="delete" objectName={objectName}>
                             <Button
                                 type="link"
                                 onClick={(e) => {
@@ -87,25 +89,68 @@ const RatingListPage = ({ pageOptions }) => {
     });
 
     const openAddModal = () => {
-        setEditingRecord(null);
+        setIsEditing(false);
+        setSelectedItem(null);
         openModal();
     };
 
     const openEditModal = (record) => {
-        setEditingRecord(record);
+        setIsEditing(true);
+        setSelectedItem(record);
         openModal();
     };
 
     const handleCloseModal = () => {
         closeModal();
-        setEditingRecord(null);
+        setSelectedItem(null);
+    };
+
+    // Hàm xử lý Submit tập trung tại Page
+    const onSubmit = async (values, callback) => {
+        const execute = isEditing ? executeUpdate : executeCreate;
+        const payload = {
+            studentId: values.student,
+            courseId: values.course,
+            star: values.star,
+            message: values.ratingContent,
+        };
+
+        if (isEditing) {
+            payload.id = selectedItem?.id;
+        }
+
+        await execute({
+            data: payload,
+            onCompleted: (response) => {
+                if (response.result === true) {
+                    closeModal();
+                    showSuccessMessage(
+                        isEditing
+                            ? translate.formatMessage(commonMessage.updateSuccess)
+                            : translate.formatMessage(commonMessage.addNewSuccess),
+                    );
+                    mixinFuncs.getList();
+                }
+            },
+            onError: (err) => {
+                const errorInfo = errorCode[err?.code];
+                if (errorInfo) {
+                    showErrorMessage(translate.formatMessage(errorInfo.message));
+                } else {
+                    showErrorMessage(err?.message || translate.formatMessage(commonMessage.commonError));
+                }
+                callback?.(err);
+            },
+        });
     };
 
     mixinFuncs.renderActionBar = () => {
+        if (!mixinFuncs.hasPermission([apiConfig.rating.create.permissionCode])) return null;
+        
         return (
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                 <Button type="primary" icon={<PlusOutlined />} onClick={openAddModal}>
-                    Thêm mới
+                    {translate.formatMessage(commonMessage.addNew)}
                 </Button>
             </div>
         );
@@ -116,7 +161,7 @@ const RatingListPage = ({ pageOptions }) => {
             title: '#',
             align: 'left',
             width: 60,
-            render: (_, record, index) => (pagination.current - 1) * pagination.pageSize + index + 1,
+            render: (_, record, index) => orderNumber(pagination, index, pagination.pageSize),
         },
         {
             title: translate.formatMessage(commonMessage.student),
@@ -128,7 +173,7 @@ const RatingListPage = ({ pageOptions }) => {
             dataIndex: ['course', 'name'],
             width: 600,
             render: (name, record) => {
-                if (!record.course.name) return '-';
+                if (!record.course?.name) return '-';
                 return (
                     <TextClamp lineClamp={2}>{name}</TextClamp>
                 );
@@ -147,7 +192,7 @@ const RatingListPage = ({ pageOptions }) => {
             width: 140,
             render: (date) => {
                 if (!date) return '-';
-                return dayjs.utc(date, DEFAULT_FORMAT).local().format(DEFAULT_FORMAT);
+                return convertUtcToLocalTime(date, DEFAULT_FORMAT, DEFAULT_FORMAT);
             },
         },
         mixinFuncs.renderActionColumn(
@@ -199,13 +244,15 @@ const RatingListPage = ({ pageOptions }) => {
                     />
                 }
             />
+            {/* Truyền các props theo đúng chuẩn của Modal mới */}
             <RatingModal
                 open={isModalOpen}
-                onCancel={handleCloseModal}
-                editingRecord={editingRecord}
-                onSuccess={mixinFuncs.getList}
-                translate={translate}
-                commonMessage={commonMessage}
+                close={handleCloseModal}
+                dataDetail={selectedItem}
+                isEditing={isEditing}
+                onSubmit={onSubmit}
+                isSubmitting={loadingCreate || loadingUpdate}
+                objectName={objectName?.toLowerCase()}
             />
         </PageWrapper>
     );

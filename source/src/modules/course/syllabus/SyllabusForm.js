@@ -1,16 +1,77 @@
-import { CropImageField, TextField, SelectField } from '@itz/react-cms-element';
+import { SaveOutlined, StopOutlined } from '@ant-design/icons';
 import { AppConstants } from '@constants';
 import DefaultAvatar from '@assets/images/avatar-default.png';
-import { Form, Row, Col } from 'antd';
-import React from 'react';
+import useBasicForm from '@hooks/useBasicForm';
+import useTranslate from '@hooks/useTranslate';
+import { BaseForm, CropImageField, SelectField, TextField } from '@itz/react-cms-element';
+import { commonMessage } from '@locales/intl';
+import { Button, Col, Modal, Row, Form } from 'antd';
+import React, { useEffect, useState } from 'react';
 
-const SyllabusForm = ({ form, translate, commonMessage, syllabusValue, imageUrl, uploadFile, editingRecord }) => {
+const SyllabusForm = (props) => {
+    const { 
+        formId, 
+        dataDetail, 
+        onSubmit, 
+        onCancel, 
+        isEditing, 
+        isSubmitting, 
+        syllabusValue, 
+        executeUpFile,
+    } = props;
+    
+    const [isChangedFormValues, setIsChangedFormValues] = useState(false);
+    const [imageUrl, setImageUrl] = useState(null);
+    const translate = useTranslate();
+
+    const { form, mixinFuncs, onValuesChange } = useBasicForm({
+        onSubmit,
+        setIsChangedFormValues,
+    });
+
     const watchedKind = Form.useWatch('kind', form);
-    const kindValue = editingRecord ? 2 : watchedKind;
+    const kindValue = isEditing ? 2 : watchedKind;
+
+    const handleSubmit = (values) => {
+        return mixinFuncs.handleSubmit({ ...values, avatar: imageUrl });
+    };
+
+    useEffect(() => {
+        form.setFieldsValue({
+            ...dataDetail,
+            kind: dataDetail?.kind ?? 1,
+            timeline: dataDetail?.timeline ?? 0,
+        });
+        setImageUrl(dataDetail?.avatar || null);
+    }, [dataDetail, form]);
+
+    const uploadFile = (file, onSuccess, onError) => {
+        executeUpFile({
+            data: { type: 'AVATAR', file: file },
+            onCompleted: (response) => {
+                if (response.result === true) {
+                    onSuccess();
+                    setImageUrl(response.data.filePath);
+                    form.setFieldsValue({ avatar: response.data.filePath });
+                    setIsChangedFormValues(true);
+                }
+            },
+            onError: (error) => {
+                onError(error);
+            },
+        });
+    };
 
     return (
-        <>
-            <Row gutter={16}>
+        <BaseForm
+            id={formId}
+            onFinish={handleSubmit}
+            form={form}
+            layout="vertical"
+            onValuesChange={onValuesChange}
+            style={{ width: '100%' }}
+        >
+            <Row gutter={16} style={{ marginTop: 16 }}>
                 <Col span={12}>
                     <CropImageField
                         label={translate.formatMessage(commonMessage.avatar)}
@@ -18,25 +79,18 @@ const SyllabusForm = ({ form, translate, commonMessage, syllabusValue, imageUrl,
                         imageUrl={imageUrl ? `${AppConstants.avatarRootUrl}${imageUrl}` : DefaultAvatar}
                         aspect={1 / 1}
                         uploadFile={uploadFile}
-                        rules={[
-                            {
-                                required: true,
-                            },
-                        ]}
+                        rules={[{ required: true }]}
                     />
                 </Col>
             </Row>
+            
             <Row gutter={16}>
                 <Col span={12}>
                     <TextField
                         label={translate.formatMessage(commonMessage.syllabusName)}
-                        placeholder={translate.formatMessage(commonMessage.syllabusName)}
                         name="name"
-                        rules={[
-                            {
-                                required: true,
-                            },
-                        ]}
+                        required
+                        placeholder={translate.formatMessage(commonMessage.syllabusName)}
                     />
                 </Col>
                 <Col span={12}>
@@ -46,13 +100,8 @@ const SyllabusForm = ({ form, translate, commonMessage, syllabusValue, imageUrl,
                         placeholder={translate.formatMessage(commonMessage.kind)}
                         allowClear={false}
                         options={syllabusValue}
-                        initialValue={1}
-                        disabled={editingRecord}
-                        rules={[
-                            {
-                                required: true,
-                            },
-                        ]}
+                        disabled={isEditing}
+                        rules={[{ required: true }]}
                     />
                 </Col>
                 {kindValue === 2 && (
@@ -62,14 +111,12 @@ const SyllabusForm = ({ form, translate, commonMessage, syllabusValue, imageUrl,
                             placeholder={translate.formatMessage(commonMessage.timeline)}
                             name="timeline"
                             disabled={watchedKind === 1}
-                            rules={[
-                                {
-                                    required: true,
-                                },
-                            ]}
+                            rules={[{ required: true }]}
                         />
                     </Col>
                 )}
+            </Row>
+            <Row gutter={16}>
                 <Col span={24}>
                     <TextField
                         label={translate.formatMessage(commonMessage.description)}
@@ -77,15 +124,57 @@ const SyllabusForm = ({ form, translate, commonMessage, syllabusValue, imageUrl,
                         name="description"
                         type="textarea"
                         autoSize={{ minRows: 6, maxRows: 10 }}
-                        rules={[
-                            {
-                                required: true,
-                            },
-                        ]}
+                        rules={[{ required: true }]}
                     />
                 </Col>
             </Row>
-        </>
+
+            <div className="footer-card-form">
+                <Row justify="end" gutter={12}>
+                    <Col>
+                        <Button
+                            danger
+                            key="cancel"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (isChangedFormValues) {
+                                    Modal.confirm({
+                                        title: translate.formatMessage(commonMessage.confirmCancel),
+                                        content: translate.formatMessage(commonMessage.confirmCancelContent),
+                                        cancelButtonProps: { danger: true },
+                                        onOk: () => {
+                                            setIsChangedFormValues(false);
+                                            onCancel();
+                                        },
+                                        okText: translate.formatMessage(commonMessage.yes),
+                                        cancelText: translate.formatMessage(commonMessage.no),
+                                    });
+                                } else {
+                                    onCancel();
+                                }
+                            }}
+                            icon={<StopOutlined />}
+                        >
+                            {translate.formatMessage(commonMessage.cancel)}
+                        </Button>
+                    </Col>
+                    <Col>
+                        <Button
+                            key="submit"
+                            htmlType="submit"
+                            type="primary"
+                            loading={isSubmitting}
+                            disabled={!isChangedFormValues}
+                            icon={<SaveOutlined />}
+                        >
+                            {isEditing
+                                ? translate.formatMessage(commonMessage.update)
+                                : translate.formatMessage(commonMessage.addNew)}
+                        </Button>
+                    </Col>
+                </Row>
+            </div>
+        </BaseForm>
     );
 };
 

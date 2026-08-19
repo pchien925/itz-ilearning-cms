@@ -1,15 +1,15 @@
 import React from 'react';
 import { StarFilled } from '@ant-design/icons';
-import './StarRating.scss';
+import styles from './StarRating.module.scss';
 
 const StarRating = ({ value = 0, max = 5 }) => {
     return (
-        <div className="star-rating">
+        <div className={styles['star-rating']}>
             {Array.from({ length: max }, (_, index) => (
                 <StarFilled
                     key={index}
-                    className={`star-rating__icon ${
-                        index < value ? 'star-rating__icon--filled' : 'star-rating__icon--empty'
+                    className={`${styles['star-rating__icon']} ${
+                        index < value ? styles['star-rating__icon--filled'] : styles['star-rating__icon--empty']
                     }`}
                 />
             ))}

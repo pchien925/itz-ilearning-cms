@@ -1,38 +1,58 @@
-import { DeleteOutlined, CheckOutlined, CloseOutlined, PlusOutlined, SaveOutlined, StopOutlined } from '@ant-design/icons';
-import { BaseTable, PageWrapper, ListPage, BaseTooltip, AutoCompleteField } from '@itz/react-cms-element';
+import { DeleteOutlined, CheckOutlined, CloseOutlined, PlusOutlined } from '@ant-design/icons';
+import { BaseTable, PageWrapper, ListPage, BaseTooltip } from '@itz/react-cms-element';
 import { DEFAULT_TABLE_ITEM_SIZE } from '@constants';
 import apiConfig from '@constants/apiConfig';
 import { FieldTypes } from '@constants/formConfig';
 import { classroomStudentStateOptions } from '@constants/masterData';
 import useListBase from '@hooks/useListBase';
 import useTranslate from '@hooks/useTranslate';
+import useDisclosure from '@hooks/useDisclosure';
 import { commonMessage } from '@locales/intl';
-import { Button, Empty, Tag, Modal, Tooltip, Form, Select, Spin, Row, Col } from 'antd';
-import React, { useState } from 'react';
-import { useLocation, useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { DATE_FORMAT_DISPLAY } from '@constants';
+import { Button, Empty, Tag, Modal } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import useFetch from '@hooks/useFetch';
-import dayjs from 'dayjs';
 import { showSuccessMessage, showErrorMessage } from '@services/notifyService';
+import { convertUtcToLocalTime, DEFAULT_FORMAT, DATE_FORMAT_DISPLAY, orderNumber } from '@itz/react-utils';
+import ClassroomStudentModal from './ClassroomStudentModal';
 
 const ClassroomStudentListPage = ({ pageOptions }) => {
     const translate = useTranslate();
     const location = useLocation();
-    const navigate = useNavigate();
     const { pathname: pagePath } = useLocation();
     const search = location.search;
     const { id } = useParams();
     const [searchParams, setSearchParams] = useSearchParams();
     const [displayName] = useState(searchParams.get('classroomName'));
     const stateValue = translate.formatKeys(classroomStudentStateOptions, ['label']);
+    
+    // Sử dụng useDisclosure thay cho useState để quản lý bật/tắt Modal giống chuẩn
+    const [isAddModalVisible, { open: openModal, close: closeModal }] = useDisclosure(false);
+
     const { execute: executeChangeState } = useFetch(apiConfig.classroomStudent.changeState);
     const { execute: executeCreateStudent, loading: loadingCreate } = useFetch(apiConfig.classroomStudent.registerByStudent);
+    
     const approveState = classroomStudentStateOptions[1].value;
     const rejectState = classroomStudentStateOptions[2].value;
-    const [isAddModalVisible, setIsAddModalVisible] = useState(false);
-    const [form] = Form.useForm();
-    const selectedStudent = Form.useWatch('studentId', form);
 
+    useEffect(() => {
+        if (!displayName) return;
+
+        const keys = Array.from(searchParams.keys());
+        const isAlreadyCorrect =
+            keys[0] === 'classroomName' && searchParams.get('classroomName') === displayName;
+
+        if (isAlreadyCorrect) return;
+
+        setSearchParams((prev) => {
+            const next = new URLSearchParams();
+            next.set('classroomName', displayName);
+            prev.forEach((value, key) => {
+                if (key !== 'classroomName') next.set(key, value);
+            });
+            return next;
+        }, { replace: true });
+    }, [searchParams, displayName, setSearchParams]);
 
     const { data, mixinFuncs, queryFilter, loading, pagination } = useListBase({
         apiConfig: {
@@ -51,25 +71,30 @@ const ClassroomStudentListPage = ({ pageOptions }) => {
                         <Button
                             type="primary"
                             icon={<PlusOutlined />}
-                            onClick={() => setIsAddModalVisible(true)}
+                            onClick={openModal}
                         >
                             Thêm học viên
                         </Button>
                     </div>
                 );
             };
+            const originalSetQueryParams = funcs.setQueryParams;
+
+            funcs.setQueryParams = (queryObj) => {
+                const { classroomName: _ignored, ...restParams } = queryObj || {};
+                const merged = {
+                    ...(displayName ? { classroomName: displayName } : {}),
+                    ...restParams,
+                };
+                return originalSetQueryParams(merged);
+            };
+
+            const originalChangeFilter = funcs.changeFilter;
+
             funcs.changeFilter = (filter) => {
-                const filterParts = Object.keys(filter)
-                    .filter(key => filter[key] !== undefined && filter[key] !== null && filter[key] !== '')
-                    .map(key => `${key}=${encodeURIComponent(filter[key])}`);
-                const tailPart = `classroomName=${encodeURIComponent(displayName)}`;
-                const finalQueryString = filterParts.length > 0
-                    ? `?${filterParts.join('&')}&${tailPart}`
-                    : `?${tailPart}`;
-                navigate(`${pagePath}${finalQueryString}`, { replace: true });
+                return originalChangeFilter({ ...filter, page: 1 });
             };
             funcs.mappingData = (response) => {
-
                 if (response.result === true) {
                     return {
                         data: response.data.content,
@@ -189,7 +214,6 @@ const ClassroomStudentListPage = ({ pageOptions }) => {
                         </BaseTooltip>
                     );
                 },
-
             });
         },
     });
@@ -199,7 +223,7 @@ const ClassroomStudentListPage = ({ pageOptions }) => {
             title: '#',
             align: 'left',
             width: 60,
-            render: (_, record, index) => (pagination.current - 1) * pagination.pageSize + index + 1,
+            render: (_, record, index) => orderNumber(pagination, index, pagination.pageSize),
         },
         {
             title: translate.formatMessage(commonMessage.fullName),
@@ -219,7 +243,7 @@ const ClassroomStudentListPage = ({ pageOptions }) => {
             title: translate.formatMessage(commonMessage.dateRegistration),
             dataIndex: 'dateRegistration',
             width: 150,
-            render: (date) => date ? dayjs(date).format(DATE_FORMAT_DISPLAY) : '-',
+            render: (date) => date ? convertUtcToLocalTime(date, DEFAULT_FORMAT, DATE_FORMAT_DISPLAY) : '-',
         },
         {
             title: translate.formatMessage(commonMessage.state),
@@ -258,17 +282,17 @@ const ClassroomStudentListPage = ({ pageOptions }) => {
         },
     ];
 
-    const onFinishAddStudent = (values) => {
+    // Hàm gọi API xử lý Submit đẩy vào Modal Form
+    const onSubmit = async (values, callback) => {
         executeCreateStudent({
             data: {
-                ...values,
+                studentId: values.studentId,
                 classroomId: id,
             },
             onCompleted: (response) => {
                 if (response.result === true) {
                     showSuccessMessage('Thêm học viên thành công!');
-                    setIsAddModalVisible(false);
-                    form.resetFields();
+                    closeModal();
                     mixinFuncs.getList();
                 } else {
                     showErrorMessage('Thêm học viên thất bại!');
@@ -276,6 +300,7 @@ const ClassroomStudentListPage = ({ pageOptions }) => {
             },
             onError: (error) => {
                 showErrorMessage(error?.message || 'Đã có lỗi xảy ra!');
+                callback?.(error);
             },
         });
     };
@@ -284,7 +309,6 @@ const ClassroomStudentListPage = ({ pageOptions }) => {
         <PageWrapper routes={pageOptions.renderBreadcrumbs(commonMessage, translate, displayName)}>
             <ListPage
                 searchForm={mixinFuncs.renderSearchForm({ fields: searchFields, initialValues: queryFilter })}
-
                 actionBar={mixinFuncs.renderActionBar()}
                 baseTable={
                     <BaseTable
@@ -300,62 +324,12 @@ const ClassroomStudentListPage = ({ pageOptions }) => {
                     />
                 }
             />
-            <Modal
-                title="Thêm học viên"
+            <ClassroomStudentModal
                 open={isAddModalVisible}
-                onCancel={() => {
-                    setIsAddModalVisible(false);
-                    form.resetFields();
-                }}
-                footer={null}
-                destroyOnClose
-                centered
-            >
-                <Form
-                    form={form}
-                    layout="vertical"
-                    onFinish={onFinishAddStudent}
-                >
-                    <AutoCompleteField
-                        name="studentId"
-                        label="Học viên"
-                        placeholder="Học viên"
-                        apiConfig={apiConfig.student.autocomplete}
-                        mappingOptions={(item) => ({
-                            label: item.account?.fullName,
-                            value: item.id,
-                        })}
-                        searchParams={(text) => ({ fullName: text })}
-                        required
-                        useFetch={useFetch}
-                    />
-                    <Row justify="end" gutter={12} style={{ marginTop: 24 }}>
-                        <Col>
-                            <Button
-                                danger
-                                onClick={() => {
-                                    setIsAddModalVisible(false);
-                                    form.resetFields();
-                                }}
-                                icon={<StopOutlined />}
-                            >
-                                {translate.formatMessage(commonMessage.cancel || { id: 'cancel', defaultMessage: 'Hủy' })}
-                            </Button>
-                        </Col>
-                        <Col>
-                            <Button
-                                type="primary"
-                                htmlType="submit"
-                                loading={loadingCreate}
-                                icon={<SaveOutlined />}
-                                disabled={!selectedStudent}
-                            >
-                                {translate.formatMessage({ id: 'create', defaultMessage: 'Thêm mới' })}
-                            </Button>
-                        </Col>
-                    </Row>
-                </Form>
-            </Modal>
+                close={closeModal}
+                onSubmit={onSubmit}
+                isSubmitting={loadingCreate}
+            />
         </PageWrapper>
     );
 };

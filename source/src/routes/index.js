@@ -11,6 +11,8 @@ import syllabusRoutes from '@modules/course/syllabus/routes';
 import ratingRoutes from '@modules/rating/routes';
 import topStudentRoutes from '@modules/report/topStudent/routes';
 import SettingsPageRoutes from '@modules/setting/routes';
+import topCourseRoutes from '@modules/report/topCourse/routes';
+import studentListRoutes from '@modules/student/routes';
 /*
 	auth
 		+ null: access login and not login
@@ -52,6 +54,8 @@ const routes = {
     ...ratingRoutes,
     ...topStudentRoutes,
     ...SettingsPageRoutes,
+    ...topCourseRoutes,
+    ...studentListRoutes,
 
     // keep this at last
     notFound: {

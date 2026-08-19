@@ -1,5 +1,5 @@
 import apiConfig from '@constants/apiConfig';
-import { classroomState, DEFAULT_FORMAT } from '@constants';
+import { classroomState } from '@constants';
 import useBasicForm from '@hooks/useBasicForm';
 import useFetch from '@hooks/useFetch';
 import useTranslate from '@hooks/useTranslate';
@@ -8,7 +8,7 @@ import { commonMessage } from '@locales/intl';
 import { Card, Col, Row } from 'antd';
 import React, { useEffect } from 'react';
 import dayjs from 'dayjs';
-
+import { convertUtcToLocalTime, DEFAULT_FORMAT } from '@itz/react-utils';
 
 const ClassroomForm = (props) => {
     const translate = useTranslate();
@@ -35,8 +35,12 @@ const ClassroomForm = (props) => {
         form.setFieldsValue({
             ...dataDetail,
             course: dataDetail?.course ? { id: dataDetail.course.id } : undefined,
-            startDate: dataDetail.startDate ? dayjs(dataDetail.startDate, DEFAULT_FORMAT) : undefined,
-            endDate: dataDetail.endDate ? dayjs(dataDetail.endDate, DEFAULT_FORMAT) : undefined,
+            startDate: dataDetail.startDate
+                ? dayjs(convertUtcToLocalTime(dataDetail.startDate, DEFAULT_FORMAT, DEFAULT_FORMAT), DEFAULT_FORMAT)
+                : undefined,
+            endDate: dataDetail.endDate
+                ? dayjs(convertUtcToLocalTime(dataDetail.endDate, DEFAULT_FORMAT, DEFAULT_FORMAT), DEFAULT_FORMAT)
+                : undefined,
         });
     }, [dataDetail]);
 
@@ -62,11 +66,7 @@ const ClassroomForm = (props) => {
                             name="price"
                             label={translate.formatMessage(commonMessage.price)}
                             min={0}
-                            rules={[
-                                {
-                                    required: true,
-                                },
-                            ]}
+                            rules={[{ required: true }]}
                         />
                     </Col>
                     <Col span={12}>
@@ -86,11 +86,7 @@ const ClassroomForm = (props) => {
                             format="DD/MM/YYYY HH:mm:ss"
                             showTime
                             style={{ width: '100%' }}
-                            rules={[
-                                {
-                                    required: true,
-                                },
-                            ]}
+                            rules={[{ required: true }]}
                         />
                     </Col>
                 </Row>
