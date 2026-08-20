@@ -1,11 +1,11 @@
-import { KIND_ADMIN, KIND_CUSTOMER } from '@constants';
+import { KIND_ADMIN, KIND_CUSTOMER, KIND_EMPLOYEE } from '@constants';
 import apiConfig from '@constants/apiConfig';
 import { commonMessage } from '@locales/intl';
 import StudentListPage from '.';
-// import MentorSavePage from './MentorSavePage';
+import StudentSavePage from './StudentSavePage';
 const paths = {
     studentsListPage: '/students',
-    // mentorsSavePage: '/mentors/:id',
+    studentsSavePage: '/students/:id',
 };
 export default {
     studentListPage: {
@@ -20,22 +20,22 @@ export default {
             },
         },
     },
-    // mentorSavePage: {
-    //     path: paths.mentorsSavePage,
-    //     component: MentorSavePage,
-    //     separateCheck: true,
-    //     auth: true,
-    //     permission: [apiConfig.mentor.create.permissionCode, apiConfig.mentor.update.permissionCode],
-    //     pageOptions: {
-    //         objectName: commonMessage.mentor,
-    //         kind: KIND_CUSTOMER,
-    //         listPageUrl: paths.mentorsListPage,
-    //         renderBreadcrumbs: (messages, t, title, options = {}) => {
-    //             return [
-    //                 { breadcrumbName: t.formatMessage(messages.mentor), path: paths.mentorsListPage },
-    //                 { breadcrumbName: title },
-    //             ];
-    //         },
-    //     },
-    // },
+    studentSavePage: {
+        path: paths.studentsSavePage,
+        component: StudentSavePage,
+        separateCheck: true,
+        auth: true,
+        permission: [apiConfig.student.create.permissionCode, apiConfig.student.update.permissionCode],
+        pageOptions: {
+            objectName: commonMessage.student,
+            kind: KIND_EMPLOYEE,
+            listPageUrl: paths.studentsListPage,
+            renderBreadcrumbs: (messages, t, title, options = {}) => {
+                return [
+                    { breadcrumbName: t.formatMessage(messages.student), path: paths.studentsListPage },
+                    { breadcrumbName: title },
+                ];
+            },
+        },
+    },
 };

@@ -534,6 +534,43 @@ const apiConfig = {
             headers: baseHeader,
         },
     },
+    company: {
+        update: {
+            baseURL: `${apiUrl}v1/company/update`,
+            method: 'PUT',
+            headers: baseHeader,
+            permissionCode: 'COM_U',
+        },
+        create: {
+            baseURL: `${apiUrl}v1/company/create`,
+            method: 'POST',
+            headers: baseHeader,
+            permissionCode: 'COM_C',
+        },
+        getPublicList: {
+            baseURL: `${apiUrl}v1/company/public/list`,
+            method: 'GET',
+            headers: baseHeader,
+        },
+        getList: {
+            baseURL: `${apiUrl}v1/company/list`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'COM_L',
+        },
+        getById: {
+            baseURL: `${apiUrl}v1/company/get/:id`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'COM_V',
+        },
+        delete: {
+            baseURL: `${apiUrl}v1/company/delete/:id`,
+            method: 'DELETE',
+            headers: baseHeader,
+            permissionCode: 'COM_D',
+        },
+    },
 };
 
 export default apiConfig;

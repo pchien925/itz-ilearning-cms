@@ -12,7 +12,7 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { orderNumber } from '@itz/react-utils';
 
-const StudentListPage = ({ pageOptions }) => {
+const CompanyListPage = ({ pageOptions }) => {
     const translate = useTranslate();
     const location = useLocation();
     const navigate = useNavigate();
@@ -22,7 +22,7 @@ const StudentListPage = ({ pageOptions }) => {
 
     const { data, mixinFuncs, queryFilter, loading, pagination } = useListBase({
         apiConfig: {
-            ...apiConfig.student,
+            ...apiConfig.company,
         },
         options: {
             pageSize: DEFAULT_TABLE_ITEM_SIZE,
@@ -49,7 +49,7 @@ const StudentListPage = ({ pageOptions }) => {
             };
             funcs.additionalActionColumnButtons = () => ({
                 edit: (record) => {
-                    const hasPerm = mixinFuncs.hasPermission([apiConfig.student.update.permissionCode]);
+                    const hasPerm = mixinFuncs.hasPermission([apiConfig.company.update.permissionCode]);
                     return (
                         <BaseTooltip type="edit" objectName={translate.formatMessage(pageOptions.objectName)}>
                             <Button
@@ -70,7 +70,7 @@ const StudentListPage = ({ pageOptions }) => {
                 },
                 delete: (record) => {
                     const isDelete = record?.status === STATUS_DELETE;
-                    const hasPerm = mixinFuncs.hasPermission([apiConfig.student.delete.permissionCode]);
+                    const hasPerm = mixinFuncs.hasPermission([apiConfig.company.delete.permissionCode]);
                     return (
                         <BaseTooltip type="delete" objectName={translate.formatMessage(pageOptions.objectName)}>
                             <Button
@@ -99,13 +99,13 @@ const StudentListPage = ({ pageOptions }) => {
         },
         {
             title: translate.formatMessage(commonMessage.avatar),
-            dataIndex: ['account', 'avatarPath'],
+            dataIndex: 'avatar',
             align: 'left',
             width: 80,
             render: (avatar) => {
                 return (
                     <AvatarField
-                        size="default"
+                        size="large"
                         icon={<UserOutlined />}
                         src={avatar ? `${AppConstants.avatarRootUrl}${avatar}` : null}
                     />
@@ -113,17 +113,8 @@ const StudentListPage = ({ pageOptions }) => {
             },
         },
         {
-            title: translate.formatMessage(commonMessage.fullName),
-            dataIndex: ['account', 'fullName'],
-        },
-        {
-            title: translate.formatMessage(commonMessage.email),
-            dataIndex: ['account', 'email'],
-            width: '240px',
-        },
-        {
-            title: translate.formatMessage(commonMessage.phone),
-            dataIndex: ['account', 'phone'], width: 200,
+            title: translate.formatMessage(commonMessage.companyName),
+            dataIndex: 'name',
         },
         mixinFuncs.renderStatusColumn({ width: 160 }),
         mixinFuncs.renderActionColumn(
@@ -137,28 +128,16 @@ const StudentListPage = ({ pageOptions }) => {
 
     const searchFields = [
         {
-            key: 'fullName',
-            placeholder: translate.formatMessage(commonMessage.fullName),
+            key: 'name',
+            placeholder: translate.formatMessage(commonMessage.companyName),
         },
         {
-            key: 'email',
-            placeholder: translate.formatMessage(commonMessage.email),
-            type: FieldTypes.STRING,
-            renderItem: () => <TextField placeholder={translate.formatMessage(commonMessage.email)} />,
+            key: 'status',
+            placeholder: translate.formatMessage(commonMessage.status),
+            type: FieldTypes.SELECT,
+            options: statusValue,
+            submitOnChanged: true,
         },
-        {
-            key: 'phone',
-            placeholder: translate.formatMessage(commonMessage.phoneNumber),
-            type: FieldTypes.STRING,
-            renderItem: () => <TextField placeholder={translate.formatMessage(commonMessage.phoneNumber)} />,
-        },
-        // {
-        //     key: 'status',
-        //     placeholder: translate.formatMessage(commonMessage.status),
-        //     type: FieldTypes.SELECT,
-        //     options: statusValue,
-        //     submitOnChanged: true,
-        // },
     ];
 
     return (
@@ -184,4 +163,4 @@ const StudentListPage = ({ pageOptions }) => {
     );
 };
 
-export default StudentListPage;
+export default CompanyListPage;

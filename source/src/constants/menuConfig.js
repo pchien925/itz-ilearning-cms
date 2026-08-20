@@ -84,6 +84,13 @@ export const navMenuConfig = [
         icon: <SettingOutlined />,
         children: [
             {
+                label: <FormattedMessage defaultMessage="Công ty" />,
+                key: 'company',
+                path: routes.companyListPage.path,
+                permission: [apiConfig.company.getList.permissionCode],
+                isSuperAdmin: true,
+            },
+            {
                 label: <FormattedMessage defaultMessage="Quyền" />,
                 key: 'group-permission',
                 path: routes.groupPermissionListPage.path,

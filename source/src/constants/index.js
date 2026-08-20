@@ -95,6 +95,7 @@ export const SORT_DATE = 3;
 
 export const KIND_ADMIN = 1;
 export const KIND_CUSTOMER = 2;
+export const KIND_EMPLOYEE = 3;
 
 export const ROLE_KIND_ADMIN = 1;
 
