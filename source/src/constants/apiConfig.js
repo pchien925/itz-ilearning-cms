@@ -571,6 +571,38 @@ const apiConfig = {
             permissionCode: 'COM_D',
         },
     },
+    tag: {
+        update: {
+            baseURL: `${apiUrl}v1/tags/update`,
+            method: 'PUT',
+            headers: baseHeader,
+            permissionCode: 'TAG_U',
+        },
+        create: {
+            baseURL: `${apiUrl}v1/tags/create`,
+            method: 'POST',
+            headers: baseHeader,
+            permissionCode: 'TAG_C',
+        },
+        getList: {
+            baseURL: `${apiUrl}v1/tags/list`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'TAG_L',
+        },
+        getById: {
+            baseURL: `${apiUrl}v1/tags/get/:id`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'TAG_V',
+        },
+        delete: {
+            baseURL: `${apiUrl}v1/tags/delete/:id`,
+            method: 'DELETE',
+            headers: baseHeader,
+            permissionCode: 'TAG_D',
+        },
+    },
 };
 
 export default apiConfig;

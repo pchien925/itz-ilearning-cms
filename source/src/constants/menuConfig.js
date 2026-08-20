@@ -104,6 +104,13 @@ export const navMenuConfig = [
                 permission: [apiConfig.setting.getList.permissionCode],
                 isSuperAdmin: true,
             },
+            {
+                label: <FormattedMessage defaultMessage="Thẻ" />,
+                key: 'tag',
+                path: routes.tagListPage.path,
+                permission: [apiConfig.tag.getList.permissionCode],
+                isSuperAdmin: true,
+            },
         ],
     },
 ];

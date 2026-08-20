@@ -1,15 +1,25 @@
-import React, { useState } from 'react';
 import { SaveOutlined, StopOutlined } from '@ant-design/icons';
-import { Button, Col, Modal, Row } from 'antd';
+import { AppConstants } from '@constants';
+import DefaultAvatar from '@assets/images/avatar-default.png';
 import useBasicForm from '@hooks/useBasicForm';
-import { BaseForm, AutoCompleteField } from '@itz/react-cms-element';
-import apiConfig from '@constants/apiConfig';
-import useFetch from '@hooks/useFetch';
+import useTranslate from '@hooks/useTranslate';
+import { BaseForm, ColorPickerField, SelectField, TextField } from '@itz/react-cms-element';
+import { commonMessage } from '@locales/intl';
+import { Button, Col, Modal, Row } from 'antd';
+import React, { useEffect, useState } from 'react';
 
-const ClassroomStudentForm = (props) => {
-    const { formId, onSubmit, onCancel, isSubmitting, translate, commonMessage } = props;
+const TagForm = (props) => {
+    const {
+        formId,
+        dataDetail,
+        onSubmit,
+        onCancel,
+        isEditing,
+        isSubmitting,
+    } = props;
+
     const [isChangedFormValues, setIsChangedFormValues] = useState(false);
-    
+    const translate = useTranslate();
 
     const { form, mixinFuncs, onValuesChange } = useBasicForm({
         onSubmit,
@@ -19,6 +29,12 @@ const ClassroomStudentForm = (props) => {
     const handleSubmit = (values) => {
         return mixinFuncs.handleSubmit({ ...values });
     };
+
+    useEffect(() => {
+        form.setFieldsValue({
+            ...dataDetail,
+        });
+    }, [dataDetail, form]);
 
     return (
         <BaseForm
@@ -31,23 +47,23 @@ const ClassroomStudentForm = (props) => {
         >
             <Row gutter={16}>
                 <Col span={24}>
-                    <AutoCompleteField
-                        name="studentId"
-                        label={translate.formatMessage(commonMessage.student)}
-                        placeholder={translate.formatMessage(commonMessage.student)}
-                        apiConfig={apiConfig.student.autocomplete}
-                        mappingOptions={(item) => ({
-                            label: item.account?.fullName,
-                            value: item.id,
-                        })}
-                        searchParams={(text) => ({ fullName: text })}
+                    <TextField
+                        label={translate.formatMessage(commonMessage.tagName)}
+                        name="name"
                         required
-                        useFetch={useFetch}
+                        placeholder={translate.formatMessage(commonMessage.tagName)}
+                        maxLength={100}
+                    />
+                </Col>
+                <Col span={24}>
+                    <ColorPickerField
+                        label={translate.formatMessage(commonMessage.colorCode)}
+                        name="colorCode"
                     />
                 </Col>
             </Row>
 
-            <div className="footer-card-form" style={{ marginTop: 24 }}>
+            <div className="footer-card-form">
                 <Row justify="end" gutter={12}>
                     <Col>
                         <Button
@@ -57,15 +73,15 @@ const ClassroomStudentForm = (props) => {
                                 e.stopPropagation();
                                 if (isChangedFormValues) {
                                     Modal.confirm({
-                                        title: translate.formatMessage(commonMessage.confirmCancel || { id: 'confirmCancel', defaultMessage: 'Xác nhận hủy' }),
-                                        content: translate.formatMessage(commonMessage.confirmCancelContent || { id: 'confirmCancelContent', defaultMessage: 'Bạn có chắc chắn muốn hủy?' }),
+                                        title: translate.formatMessage(commonMessage.confirmCancel),
+                                        content: translate.formatMessage(commonMessage.confirmCancelContent),
                                         cancelButtonProps: { danger: true },
                                         onOk: () => {
                                             setIsChangedFormValues(false);
                                             onCancel();
                                         },
-                                        okText: translate.formatMessage(commonMessage.yes || { id: 'yes', defaultMessage: 'Đồng ý' }),
-                                        cancelText: translate.formatMessage(commonMessage.no || { id: 'no', defaultMessage: 'Không' }),
+                                        okText: translate.formatMessage(commonMessage.yes),
+                                        cancelText: translate.formatMessage(commonMessage.no),
                                     });
                                 } else {
                                     onCancel();
@@ -73,7 +89,7 @@ const ClassroomStudentForm = (props) => {
                             }}
                             icon={<StopOutlined />}
                         >
-                            {translate.formatMessage(commonMessage.cancel || { id: 'cancel', defaultMessage: 'Hủy' })}
+                            {translate.formatMessage(commonMessage.cancel)}
                         </Button>
                     </Col>
                     <Col>
@@ -85,7 +101,9 @@ const ClassroomStudentForm = (props) => {
                             disabled={!isChangedFormValues}
                             icon={<SaveOutlined />}
                         >
-                            {translate.formatMessage({ id: 'create', defaultMessage: 'Thêm mới' })}
+                            {isEditing
+                                ? translate.formatMessage(commonMessage.update)
+                                : translate.formatMessage(commonMessage.addNew)}
                         </Button>
                     </Col>
                 </Row>
@@ -94,4 +112,4 @@ const ClassroomStudentForm = (props) => {
     );
 };
 
-export default ClassroomStudentForm;
+export default TagForm;

@@ -26,7 +26,6 @@ const ClassroomStudentListPage = ({ pageOptions }) => {
     const [displayName] = useState(searchParams.get('classroomName'));
     const stateValue = translate.formatKeys(classroomStudentStateOptions, ['label']);
     
-    // Sử dụng useDisclosure thay cho useState để quản lý bật/tắt Modal giống chuẩn
     const [isAddModalVisible, { open: openModal, close: closeModal }] = useDisclosure(false);
 
     const { execute: executeChangeState } = useFetch(apiConfig.classroomStudent.changeState);
@@ -282,7 +281,6 @@ const ClassroomStudentListPage = ({ pageOptions }) => {
         },
     ];
 
-    // Hàm gọi API xử lý Submit đẩy vào Modal Form
     const onSubmit = async (values, callback) => {
         executeCreateStudent({
             data: {
