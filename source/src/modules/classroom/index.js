@@ -1,4 +1,4 @@
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, CheckCircleOutlined, CloseCircleOutlined, CheckOutlined } from '@ant-design/icons';
 import { BaseTable, PageWrapper, ListPage, BaseTooltip, TextClamp } from '@itz/react-cms-element';
 import { DEFAULT_TABLE_ITEM_SIZE } from '@constants';
 import apiConfig from '@constants/apiConfig';
@@ -7,17 +7,11 @@ import { classroomStateOptions } from '@constants/masterData';
 import useListBase from '@hooks/useListBase';
 import useTranslate from '@hooks/useTranslate';
 import { commonMessage } from '@locales/intl';
-import { Button, Empty, Tag } from 'antd';
+import { Button, Empty, Tag, Modal } from 'antd';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useFetch from '@hooks/useFetch';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { DEFAULT_FORMAT } from '@constants';
-
-dayjs.extend(utc);
-dayjs.extend(customParseFormat);
+import { convertUtcToLocalTime, DEFAULT_FORMAT, formatMoney, orderNumber, showErrorMessage, showSuccessMessage } from '@itz/react-utils';
 
 const ClassroomListPage = ({ pageOptions }) => {
     const translate = useTranslate();
@@ -26,17 +20,12 @@ const ClassroomListPage = ({ pageOptions }) => {
     const { pathname: pagePath } = useLocation();
     const search = location.search;
     const stateValue = translate.formatKeys(classroomStateOptions, ['label']);
-
-    // const { data: courseListData } = useFetch(apiConfig.course.getList, {
-    //     immediate: true,
-    //     mappingData: (response) => response?.data?.content || [],
-    // });
-
-    // const courseOptions = (courseListData || []).map((c) => ({
-    //     value: String(c.id),
-    //     label: c.name,
-    // }));
-
+    const [pendingOption, activeOption, doneOption, cancelOption] = classroomStateOptions;
+    const pendingState = pendingOption.value;
+    const activeState = activeOption.value;
+    const completeState = doneOption.value;
+    const rejectState = cancelOption.value;
+    const { execute: executeChangeState } = useFetch(apiConfig.classroom.changeState);
 
     const { data, mixinFuncs, queryFilter, loading, pagination } = useListBase({
         apiConfig: {
@@ -66,12 +55,126 @@ const ClassroomListPage = ({ pageOptions }) => {
                 originalChangeFilter({ ...filter, page: 1 });
             };
             funcs.additionalActionColumnButtons = () => ({
+                activate: (record) => {
+                    if (record.state !== pendingState) return null;
+                    // const hasPerm = mixinFuncs.hasPermission([apiConfig.classroom.changeState.permissionCode]);
+                    return (
+                        <BaseTooltip title={translate.formatMessage(commonMessage.classroomActivate)} objectName={translate.formatMessage(pageOptions.objectName)}>
+                            <Button
+                                type="link"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    Modal.confirm({
+                                        title: translate.formatMessage(commonMessage.classroomActivateConfirmTitle),
+                                        content: '',
+                                        onOk: () => {
+                                            executeChangeState({
+                                                data: { id: record.id, state: activeState },
+                                                onCompleted: (response) => {
+                                                    if (response.result === true) {
+                                                        showSuccessMessage(translate.formatMessage(commonMessage.classroomActivateSuccess));
+                                                        mixinFuncs.getList();
+                                                    } else {
+                                                        showErrorMessage('Kích hoạt thất bại!');
+                                                    }
+                                                },
+                                                onError: (error) => {
+                                                    showErrorMessage(error?.message || 'Đã có lỗi xảy ra khi thực hiện thao tác!');
+                                                },
+                                            });
+                                        },
+                                    });
+                                }}
+                                // disabled={!hasPerm}
+                                style={{ padding: 0 }}
+                            >
+                                <CheckOutlined />
+                            </Button>
+                        </BaseTooltip>
+                    );
+                },
+
+                complete: (record) => {
+                    if (record.state !== activeState) return null;
+                    // const hasPerm = mixinFuncs.hasPermission([apiConfig.classroom.changeState.permissionCode]);
+                    return (
+                        <BaseTooltip title={translate.formatMessage(commonMessage.classroomMarkDone)} objectName={translate.formatMessage(pageOptions.objectName)}>
+                            <Button
+                                type="link"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    Modal.confirm({
+                                        title: translate.formatMessage(commonMessage.classroomMarkDoneConfirmTitle),
+                                        content: '',
+                                        onOk: () => {
+                                            executeChangeState({
+                                                data: { id: record.id, state: completeState },
+                                                onCompleted: (response) => {
+                                                    if (response.result === true) {
+                                                        showSuccessMessage('Hoàn thành thành công!');
+                                                        mixinFuncs.getList();
+                                                    } else {
+                                                        showErrorMessage('Hoàn thành thất bại!');
+                                                    }
+                                                },
+                                                onError: (error) => {
+                                                    showErrorMessage(error?.message || 'Đã có lỗi xảy ra khi thực hiện thao tác!');
+                                                },
+                                            });
+                                        },
+                                    });
+                                }}
+                                // disabled={!hasPerm}
+                                style={{ padding: 0 }}
+                            >
+                                <CheckCircleOutlined />
+                            </Button>
+                        </BaseTooltip>
+                    );
+                },
+
+                cancel: (record) => {
+                    if (record.state !== activeState) return null;
+                    // const hasPerm = mixinFuncs.hasPermission([apiConfig.classroom.changeState.permissionCode]);
+                    return (
+                        <BaseTooltip title={translate.formatMessage(commonMessage.classroomCancelClass)} objectName={translate.formatMessage(pageOptions.objectName)}>
+                            <Button
+                                type="link"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    Modal.confirm({
+                                        title: translate.formatMessage(commonMessage.classroomCancelClassConfirmTitle),
+                                        content: '',
+                                        onOk: () => {
+                                            executeChangeState({
+                                                data: { id: record.id, state: rejectState },
+                                                onCompleted: (response) => {
+                                                    if (response.result === true) {
+                                                        showSuccessMessage('Huỷ lớp học thành công!');
+                                                        mixinFuncs.getList();
+                                                    } else {
+                                                        showErrorMessage('Huỷ lớp học thất bại!');
+                                                    }
+                                                },
+                                                onError: (error) => {
+                                                    showErrorMessage(error?.message || 'Đã có lỗi xảy ra khi thực hiện thao tác!');
+                                                },
+                                            });
+                                        },
+                                    });
+                                }}
+                                // disabled={!hasPerm}
+                                style={{ padding: 0 }}
+                            >
+                                <CloseCircleOutlined />
+                            </Button>
+                        </BaseTooltip>
+                    );
+                },
+
                 edit: (record) => {
-
-                    const canEdit = record.state === 0;
-
+                    const canEdit = record.state === pendingState;
                     const hasPerm = mixinFuncs.hasPermission([apiConfig.classroom.update.permissionCode]);
-
                     const isDisabled = !hasPerm || !canEdit;
 
                     return (
@@ -87,7 +190,7 @@ const ClassroomListPage = ({ pageOptions }) => {
                                 style={{ padding: 0 }}
                                 disabled={isDisabled}
                             >
-                                <EditOutlined />
+                                <EditOutlined style={{ color: !hasPerm ? '' : 'rgba(0, 0, 0, 0.25)' }} />
                             </Button>
                         </BaseTooltip>
                     );
@@ -110,7 +213,6 @@ const ClassroomListPage = ({ pageOptions }) => {
                         </BaseTooltip>
                     );
                 },
-
             });
         },
     });
@@ -120,7 +222,7 @@ const ClassroomListPage = ({ pageOptions }) => {
             title: '#',
             align: 'left',
             width: 40,
-            render: (_, record, index) => (pagination.current - 1) * pagination.pageSize + index + 1,
+            render: (_, record, index) => orderNumber(pagination, index, pagination.pageSize),
         },
         {
             title: translate.formatMessage(commonMessage.course),
@@ -130,11 +232,10 @@ const ClassroomListPage = ({ pageOptions }) => {
                 if (!record.course) return '-';
                 return (
                     <div
-                        style={{ color: '#1890ff', cursor: 'pointer', fontWeight: 500 }}
+                        style={{ color: '#1890ff', cursor: 'pointer', fontWeight: 400 }}
                         onClick={(e) => {
                             e.stopPropagation();
                             const id = record.id;
-                            // Mã hóa tên để đưa lên query param (đổi khoảng trắng thành %20, v.v.)
                             const encodedName = encodeURIComponent(name);
                             navigate(`/classroom/${id}/student?classroomName=${encodedName}`);
                         }}
@@ -150,7 +251,7 @@ const ClassroomListPage = ({ pageOptions }) => {
             width: 140,
             render: (date) => {
                 if (!date) return '-';
-                return dayjs.utc(date, DEFAULT_FORMAT).local().format(DEFAULT_FORMAT);
+                return convertUtcToLocalTime(date, DEFAULT_FORMAT, DEFAULT_FORMAT);
             },
         },
         {
@@ -159,7 +260,7 @@ const ClassroomListPage = ({ pageOptions }) => {
             width: 140,
             render: (date) => {
                 if (!date) return '-';
-                return dayjs.utc(date, DEFAULT_FORMAT).local().format(DEFAULT_FORMAT);
+                return convertUtcToLocalTime(date, DEFAULT_FORMAT, DEFAULT_FORMAT);
             },
         },
         {
@@ -169,13 +270,17 @@ const ClassroomListPage = ({ pageOptions }) => {
             align: 'right',
             render: (price) => {
                 if (price == null) return '-';
-                return `${price.toLocaleString('vi-VN')} đ`;
+                return formatMoney(price, {
+                    groupSeparator: '.',
+                    decimalSeparator: ',',
+                    currentcy: 'đ',
+                });
             },
         },
         {
             title: translate.formatMessage(commonMessage.state),
             dataIndex: 'state',
-            width: 160,
+            width: 140,
             align: 'center',
             render: (stateValue) => {
                 const option = classroomStateOptions.find((item) => item.value === stateValue);
@@ -191,6 +296,9 @@ const ClassroomListPage = ({ pageOptions }) => {
         },
         mixinFuncs.renderActionColumn(
             {
+                activate: true,
+                complete: true,
+                cancel: true,
                 edit: true,
                 delete: true,
             },

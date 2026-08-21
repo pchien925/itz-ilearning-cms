@@ -95,6 +95,7 @@ export const SORT_DATE = 3;
 
 export const KIND_ADMIN = 1;
 export const KIND_CUSTOMER = 2;
+export const KIND_EMPLOYEE = 3;
 
 export const ROLE_KIND_ADMIN = 1;
 
@@ -175,6 +176,10 @@ export const VILLAGE_KIND = 3;
 export const SYLLABUS_KIND_SESSION = 1;
 export const SYLLABUS_KIND_LECTURE = 2;
 export const CATEGORY_KIND_SLIDER = 8;
+export const CATEGORY_KIND_DEVICE = 1;
+export const CATEGORY_KIND_DEVICEBRAND = 2;
+
+
 
 export const SettingTypes = {
     Money: 'Money',

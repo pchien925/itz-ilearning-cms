@@ -8,10 +8,7 @@ import { showErrorMessage } from '@services/notifyService';
 import React from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import ClassroomForm from './ClassroomForm';
-import { DEFAULT_FORMAT } from '@constants';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-dayjs.extend(utc);
+import { convertLocalTimeToUtc, DEFAULT_FORMAT } from '@itz/react-utils';
 
 const ClassroomSavePage = ({ pageOptions }) => {
     const translate = useTranslate();
@@ -33,17 +30,18 @@ const ClassroomSavePage = ({ pageOptions }) => {
                 return {
                     ...data,
                     courseId: data.course?.id ?? data.courseId,
-                    startDate: data.startDate ? dayjs(data.startDate).utc().format(DEFAULT_FORMAT) : null,
-                    endDate: data.endDate ? dayjs(data.endDate).utc().format(DEFAULT_FORMAT) : null,
+                    startDate: data.startDate ? convertLocalTimeToUtc(data.startDate, DEFAULT_FORMAT, DEFAULT_FORMAT) : null,
+                    endDate: data.endDate ? convertLocalTimeToUtc(data.endDate, DEFAULT_FORMAT, DEFAULT_FORMAT) : null,
                     id: id,
                 };
             };
+
             funcs.prepareCreateData = (data) => {
                 return {
                     ...data,
                     courseId: data.course?.id ?? data.courseId,
-                    startDate: data.startDate ? dayjs(data.startDate).utc().format(DEFAULT_FORMAT) : null,
-                    endDate: data.endDate ? dayjs(data.endDate).utc().format(DEFAULT_FORMAT) : null,
+                    startDate: data.startDate ? convertLocalTimeToUtc(data.startDate, DEFAULT_FORMAT, DEFAULT_FORMAT) : null,
+                    endDate: data.endDate ? convertLocalTimeToUtc(data.endDate, DEFAULT_FORMAT, DEFAULT_FORMAT) : null,
                 };
             };
             funcs.mappingData = (data) => {

@@ -1,6 +1,6 @@
 import { DeleteOutlined, EditOutlined, UserOutlined, ReloadOutlined } from '@ant-design/icons';
 import { BaseTable, PageWrapper, ListPage, BaseTooltip, AvatarField, TextField } from '@itz/react-cms-element';
-import { AppConstants, DEFAULT_TABLE_ITEM_SIZE, KIND_ADMIN, STATUS_DELETE } from '@constants';
+import { AppConstants, DEFAULT_TABLE_ITEM_SIZE, STATUS_DELETE } from '@constants';
 import apiConfig from '@constants/apiConfig';
 import { FieldTypes } from '@constants/formConfig';
 import { statusOptions } from '@constants/masterData';
@@ -10,6 +10,7 @@ import { commonMessage } from '@locales/intl';
 import { Button, Empty } from 'antd';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+
 
 const MentorListPage = ({ pageOptions }) => {
     const translate = useTranslate();
@@ -23,8 +24,6 @@ const MentorListPage = ({ pageOptions }) => {
     const { data, mixinFuncs, queryFilter, loading, pagination } = useListBase({
         apiConfig: {
             ...apiConfig.mentor,
-            create: apiConfig.mentor.create,
-            update: apiConfig.mentor.update,
         },
         options: {
             pageSize: DEFAULT_TABLE_ITEM_SIZE,
@@ -45,9 +44,9 @@ const MentorListPage = ({ pageOptions }) => {
             funcs.getItemDetailLink = (dataRow) => {
                 return `${pagePath}/${dataRow.id}${search}`;
             };
-            funcs.getList = () => {
-                const params = mixinFuncs.prepareGetListParams(queryFilter);
-                mixinFuncs.handleFetchList({ ...params, kind: kind });
+            const originalChangeFilter = funcs.changeFilter;
+            funcs.changeFilter = (filter) => {
+                originalChangeFilter({ ...filter, page: 1 });
             };
             funcs.additionalActionColumnButtons = () => ({
                 edit: (record) => {
@@ -84,7 +83,7 @@ const MentorListPage = ({ pageOptions }) => {
                                 disabled={!hasPerm || isDelete}
                                 style={{ padding: 0 }}
                             >
-                                <DeleteOutlined style={{ color: (!hasPerm || isDelete) ? '' : 'red' }}/>
+                                <DeleteOutlined style={{ color: (!hasPerm || isDelete) ? '' : 'red' }} />
                             </Button>
                         </BaseTooltip>
                     );
@@ -95,7 +94,7 @@ const MentorListPage = ({ pageOptions }) => {
     const columns = [
         {
             title: '#',
-            dataIndex: 'avatarPath',
+            dataIndex: ['account', 'avatarPath'],
             align: 'center',
             width: 100,
             render: (avatar) => {
@@ -112,10 +111,10 @@ const MentorListPage = ({ pageOptions }) => {
         { title: translate.formatMessage(commonMessage.username), dataIndex: ['account', 'username'], width: 200 },
         {
             title: translate.formatMessage(commonMessage.email),
-            dataIndex:['account', 'email'] ,
+            dataIndex: ['account', 'email'],
             width: '240px',
         },
-        { title: translate.formatMessage(commonMessage.phone), dataIndex: ['account', 'phone'] , width: 200 },
+        { title: translate.formatMessage(commonMessage.phone), dataIndex: ['account', 'phone'], width: 200 },
         mixinFuncs.renderStatusColumn({ width: 160 }),
         mixinFuncs.renderActionColumn(
             {

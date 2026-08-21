@@ -1,0 +1,19 @@
+.wrapper {
+    position: relative;
+    padding: 0;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+
+.actionBar {
+    display: flex;
+    justify-content: right;
+    padding: 3px 12px;
+}
+
+.content {
+    position: relative;
+    padding: 16px;
+    border-top: 1px solid #f0f0f0;
+}

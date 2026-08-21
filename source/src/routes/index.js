@@ -6,6 +6,20 @@ import adminsRoutes from '@modules/user/routes';
 import mentorsRoutes from '@modules/mentor/routes';
 import classroomRoutes from '@modules/classroom/routes';
 import classroomStudentRoutes from '@modules/classroom/classroomStudent/routes';
+import courseRoutes from '@modules/course/routes';
+import syllabusRoutes from '@modules/course/syllabus/routes';
+import ratingRoutes from '@modules/rating/routes';
+import topStudentRoutes from '@modules/report/topStudent/routes';
+import SettingsPageRoutes from '@modules/setting/routes';
+import topCourseRoutes from '@modules/report/topCourse/routes';
+import studentListRoutes from '@modules/student/routes';
+import companyListRoutes from '@modules/company/routes';
+import tagListRoutes from '@modules/tag/routes';
+import sliderListRoutes from '@modules/category/slider/routes';
+import deviceListRoutes from '@modules/category/device/routes';
+import brandDeviceListRoutes from '@modules/category/device/brand/routes';
+import registrationListRoutes from '@modules/registration/routes';
+
 /*
 	auth
 		+ null: access login and not login
@@ -42,6 +56,20 @@ const routes = {
     ...mentorsRoutes,
     ...classroomRoutes,
     ...classroomStudentRoutes,
+    ...courseRoutes,
+    ...syllabusRoutes,
+    ...ratingRoutes,
+    ...topStudentRoutes,
+    ...SettingsPageRoutes,
+    ...topCourseRoutes,
+    ...studentListRoutes,
+    ...companyListRoutes,
+    ...tagListRoutes,
+    ...sliderListRoutes,
+    ...deviceListRoutes,
+    ...brandDeviceListRoutes,
+    ...registrationListRoutes,
+
     // keep this at last
     notFound: {
         component: PageNotFound,

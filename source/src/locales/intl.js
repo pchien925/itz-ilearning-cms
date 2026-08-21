@@ -13,6 +13,7 @@ export const commonMessage = defineMessages({
     status: 'Trạng thái',
     username: 'Username',
     fullName: 'Full name',
+    setting: 'Cài đặt',
     phone: 'Phone',
     group: 'Group',
     createdDate: 'Ngày tạo',
@@ -213,4 +214,9 @@ export const commonMessage = defineMessages({
     colorCode: 'Mã màu',
     slider: 'Slider',
     sliderName: 'Tên slider',
+    sliderImage: 'Ảnh',
+    video: 'Video',
+    descriptionTitle: 'Tiêu đề',
+    sliderTypeAction: 'Loại hành động',
+    sliderUrl: 'Đường dẫn',
 });
