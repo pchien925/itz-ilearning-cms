@@ -6,8 +6,8 @@ import BrandDeviceSavePage from './BrandDeviceSavePage';
 
 const paths = {
     devicesListPage: '/devices',
-    brandDevicesListPage: '/device/:id/brand',
-    brandDevicesSavePage: '/device/:id/brand/:brandId',
+    brandDevicesListPage: '/device/:parentId/brand',
+    brandDevicesSavePage: '/device/:parentId/brand/:id',
 };
 
 export default {

@@ -14,7 +14,7 @@ import useFetch from '@hooks/useFetch';
 
 const DeviceForm = (props) => {
     const translate = useTranslate();
-    const { formId, actions, dataDetail, onSubmit, setIsChangedFormValues } = props;
+    const { formId, actions, dataDetail, onSubmit, setIsChangedFormValues, isEditing } = props;
     const [imageUrl, setImageUrl] = useState(null);
     const { execute: executeUpFile } = useFetch(apiConfig.file.upload);
     const { form, mixinFuncs, onValuesChange } = useBasicForm({

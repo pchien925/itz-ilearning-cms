@@ -14,12 +14,12 @@ const BrandDeviceSavePage = ({ pageOptions }) => {
     const { id, parentId } = useParams();
     const location = useLocation();
     const search = location.search;
-    const { detail, mixinFuncs, loading, onSave, setIsChangedFormValues, title, setSubmit } = useSaveBase({
+    const { detail, mixinFuncs, loading, onSave, setIsChangedFormValues, isEditing, title, setSubmit } = useSaveBase({
         apiConfig: {
             ...apiConfig.category,
         },
         options: {
-            getListUrl: pageOptions.listPageUrl + `${search}`,
+            getListUrl: `/device/${parentId}/brand${search}`,
             objectName: translate.formatMessage(pageOptions.objectName),
         },
         override: (funcs) => {
@@ -60,6 +60,7 @@ const BrandDeviceSavePage = ({ pageOptions }) => {
                 setIsChangedFormValues={setIsChangedFormValues}
                 dataDetail={detail ? detail : {}}
                 formId={mixinFuncs.getFormId()}
+                isEditing={isEditing}
                 actions={mixinFuncs.renderActions()}
                 onSubmit={onSave}
             />

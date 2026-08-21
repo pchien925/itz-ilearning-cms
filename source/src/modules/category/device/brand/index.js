@@ -19,7 +19,7 @@ const BrandDeviceListPage = ({ pageOptions }) => {
     const location = useLocation();
     const { pathname: pagePath } = useLocation();
     const search = location.search;
-    const { id } = useParams();
+    const { parentId } = useParams();
     const navigate = useNavigate();
     const kind = pageOptions?.kind;
     const [searchParams, setSearchParams] = useSearchParams();
@@ -88,7 +88,7 @@ const BrandDeviceListPage = ({ pageOptions }) => {
                 mixinFuncs.handleFetchList({
                     ...params,
                     kind: kind,
-                    parentId: id,
+                    parentId: parentId,
                 });
             };
             funcs.additionalActionColumnButtons = () => ({
