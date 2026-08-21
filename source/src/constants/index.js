@@ -176,6 +176,10 @@ export const VILLAGE_KIND = 3;
 export const SYLLABUS_KIND_SESSION = 1;
 export const SYLLABUS_KIND_LECTURE = 2;
 export const CATEGORY_KIND_SLIDER = 8;
+export const CATEGORY_KIND_DEVICE = 1;
+export const CATEGORY_KIND_DEVICEBRAND = 2;
+
+
 
 export const SettingTypes = {
     Money: 'Money',

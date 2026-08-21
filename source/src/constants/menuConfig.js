@@ -1,4 +1,4 @@
-import { UsergroupAddOutlined, SettingOutlined, BookOutlined, BarChartOutlined } from '@ant-design/icons';
+import { UsergroupAddOutlined, SettingOutlined, BookOutlined, BarChartOutlined, ToolOutlined } from '@ant-design/icons';
 import routes from '@routes';
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
@@ -109,6 +109,27 @@ export const navMenuConfig = [
                 key: 'tag',
                 path: routes.tagListPage.path,
                 permission: [apiConfig.tag.getList.permissionCode],
+                isSuperAdmin: true,
+            },
+            {
+                label: <FormattedMessage defaultMessage="Slider" />,
+                key: 'slider',
+                path: routes.categoryListPage.path,
+                permission: [apiConfig.category.getList.permissionCode],
+                isSuperAdmin: true,
+            },
+        ],
+    },
+    {
+        label: <FormattedMessage defaultMessage="Quản lý thiết bị" />,
+        key: 'device-management',
+        icon: <ToolOutlined />,
+        children: [
+            {
+                label: <FormattedMessage defaultMessage="Thiết bị" />,
+                key: 'device',
+                path: routes.deviceListPage.path,
+                permission: [apiConfig.category.getList.permissionCode],
                 isSuperAdmin: true,
             },
         ],

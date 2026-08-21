@@ -603,6 +603,53 @@ const apiConfig = {
             permissionCode: 'TAG_D',
         },
     },
+    category: {
+        updateOrdering: {
+            baseURL: `${apiUrl}v1/category/update-ordering`,
+            method: 'PUT',
+            headers: baseHeader,
+        },
+        update: {
+            baseURL: `${apiUrl}v1/category/update`,
+            method: 'PUT',
+            headers: baseHeader,
+            permissionCode: 'CAT_U',
+        },
+        create: {
+            baseURL: `${apiUrl}v1/category/create`,
+            method: 'POST',
+            headers: baseHeader,
+            permissionCode: 'CAT_C',
+        },
+        getPublicList: {
+            baseURL: `${apiUrl}v1/category/public/list`,
+            method: 'GET',
+            headers: baseHeader,
+        },
+        getList: {
+            baseURL: `${apiUrl}v1/category/list`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'CAT_L',
+        },
+        getById: {
+            baseURL: `${apiUrl}v1/category/get/:id`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'CAT_V',
+        },
+        autoComplete: {
+            baseURL: `${apiUrl}v1/category/auto-complete`,
+            method: 'GET',
+            headers: baseHeader,
+        },
+        delete: {
+            baseURL: `${apiUrl}v1/category/delete/:id`,
+            method: 'DELETE',
+            headers: baseHeader,
+            permissionCode: 'CAT_D',
+        },
+    },
 };
 
 export default apiConfig;

@@ -15,6 +15,10 @@ import topCourseRoutes from '@modules/report/topCourse/routes';
 import studentListRoutes from '@modules/student/routes';
 import companyListRoutes from '@modules/company/routes';
 import tagListRoutes from '@modules/tag/routes';
+import sliderListRoutes from '@modules/category/slider/routes';
+import deviceListRoutes from '@modules/category/device/routes';
+import brandDeviceListRoutes from '@modules/category/device/brand/routes';
+
 /*
 	auth
 		+ null: access login and not login
@@ -60,6 +64,9 @@ const routes = {
     ...studentListRoutes,
     ...companyListRoutes,
     ...tagListRoutes,
+    ...sliderListRoutes,
+    ...deviceListRoutes,
+    ...brandDeviceListRoutes,
 
     // keep this at last
     notFound: {
