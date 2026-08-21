@@ -650,6 +650,31 @@ const apiConfig = {
             permissionCode: 'CAT_D',
         },
     },
+    registration: {
+        create: {
+            baseURL: `${apiUrl}v1/registration/create`,
+            method: 'POST',
+            headers: baseHeader,
+        },
+        getList: {
+            baseURL: `${apiUrl}v1/registration/list`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'REG_L',
+        },
+        getById: {
+            baseURL: `${apiUrl}v1/registration/get/:id`,
+            method: 'GET',
+            headers: baseHeader,
+            permissionCode: 'REG_V',
+        },
+        delete: {
+            baseURL: `${apiUrl}v1/registration/delete/:id`,
+            method: 'DELETE',
+            headers: baseHeader,
+            permissionCode: 'REG_D',
+        },
+    },
 };
 
 export default apiConfig;

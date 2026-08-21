@@ -58,6 +58,12 @@ export const navMenuConfig = [
                 path: routes.ratingListPage.path,
                 permission: [apiConfig.rating.getList.permissionCode],
             },
+            {
+                label: <FormattedMessage defaultMessage="Đăng ký" />,
+                key: 'registration',
+                path: routes.registrationListPage.path,
+                permission: [apiConfig.registration.getList.permissionCode],
+            },
         ],
     },
     {

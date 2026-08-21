@@ -18,6 +18,7 @@ import tagListRoutes from '@modules/tag/routes';
 import sliderListRoutes from '@modules/category/slider/routes';
 import deviceListRoutes from '@modules/category/device/routes';
 import brandDeviceListRoutes from '@modules/category/device/brand/routes';
+import registrationListRoutes from '@modules/registration/routes';
 
 /*
 	auth
@@ -67,6 +68,7 @@ const routes = {
     ...sliderListRoutes,
     ...deviceListRoutes,
     ...brandDeviceListRoutes,
+    ...registrationListRoutes,
 
     // keep this at last
     notFound: {
